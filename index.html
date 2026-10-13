@@ -1,0 +1,1515 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Denník potravín</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: steel-and-chalk gym log. A scoreboard summary rail (left on desktop) beside a ruled meal ledger;
+   Olympic plate colours code the macros (red = bielkoviny, blue = sacharidy, yellow = tuky). */
+:root {
+  --bg: #ECEEF1;
+  --surface: #FFFFFF;
+  --surface-2: #F4F5F7;
+  --ink: #15181D;
+  --on-ink: #FFFFFF;
+  --muted: #5A626D;
+  --line: #D5D9DF;
+  --protein: #C8102E;
+  --carbs: #1D4FA6;
+  --fat: #D49A00;
+  --ok: #1D7A49;
+  --warn: #B5420B;
+  --focus: #1D4FA6;
+  --scrim: rgba(12, 14, 18, .45);
+  --shadow: 0 12px 40px rgba(12, 14, 18, .22);
+  --board: #15181D;
+  --board-ink: #F2F4F6;
+  --board-muted: #9AA3AE;
+  --board-line: #2C323B;
+  --board-track: #2A3038;
+  --b-protein: #F2475E;
+  --b-carbs: #4D8EF2;
+  --b-fat: #F4BC2C;
+  --b-ok: #44C285;
+  --b-warn: #F28A4A;
+  --font-display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1013; --surface: #171A1F; --surface-2: #1E2228; --ink: #E8EBEF; --on-ink: #0E1013;
+    --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C;
+    --ok: #44C285; --warn: #F28A4A; --focus: #5B97F5; --scrim: rgba(0, 0, 0, .6);
+    --shadow: 0 12px 40px rgba(0, 0, 0, .5); --board: #1C2026; --board-line: #2F353E; --board-track: #2C323B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1013; --surface: #171A1F; --surface-2: #1E2228; --ink: #E8EBEF; --on-ink: #0E1013;
+  --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C;
+  --ok: #44C285; --warn: #F28A4A; --focus: #5B97F5; --scrim: rgba(0, 0, 0, .6);
+  --shadow: 0 12px 40px rgba(0, 0, 0, .5); --board: #1C2026; --board-line: #2F353E; --board-track: #2C323B;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+.locked body { overflow: hidden; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.app { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 8px 128px; }
+
+/* Top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800;
+  font-size: 1.45rem; letter-spacing: .03em; text-transform: uppercase; line-height: 1; }
+.plate { width: 26px; height: 26px; flex: none; }
+.plate .rim { fill: var(--protein); }
+.plate .hub { fill: var(--bg); }
+.plate .ring { fill: none; stroke: var(--bg); stroke-width: 1.2; opacity: .55; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .45em; min-height: 40px; padding: 0 14px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 500;
+  text-decoration: none; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--ink); color: var(--on-ink); border-color: var(--ink); font-weight: 600; }
+.btn.ghost { background: transparent; border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-2); }
+.btn.danger { color: var(--warn); }
+.btn.block { width: 100%; min-height: 48px; }
+.btn.small { min-height: 34px; padding: 0 12px; font-size: .9rem; }
+.icon-btn { width: 40px; padding: 0; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.linklike { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* Day bar */
+.daybar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 20px;
+  padding-block: 18px 16px; border-bottom: 3px solid var(--ink); margin-bottom: 20px; }
+.day-title { min-width: 0; }
+.day-title h1 { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; margin: 0;
+  font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: .88; letter-spacing: .01em; text-wrap: balance; }
+.day-title p { margin: 6px 0 0; color: var(--muted); }
+.daynav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.date-input { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; min-height: 40px; padding: 0 10px; }
+
+/* Layout */
+.layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 880px) {
+  .layout { grid-template-columns: minmax(0, 370px) minmax(0, 1fr); align-items: start; }
+  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+}
+.rail { display: grid; gap: 20px; min-width: 0; }
+
+/* Scoreboard */
+.board { background: var(--board); color: var(--board-ink); border: 1px solid var(--board-line); border-radius: 14px; padding: 20px; }
+.eyebrow { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.board .eyebrow { color: var(--board-muted); }
+.kcal-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.kcal-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(3.4rem, 15vw, 4.6rem); line-height: .82;
+  font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.kcal-big small { font-size: .32em; font-weight: 700; letter-spacing: .06em; margin-left: .25em; color: var(--board-muted); }
+.kcal-goal { text-align: right; color: var(--board-muted); font-size: .85rem; line-height: 1.3; }
+.kcal-goal b { display: block; color: var(--board-ink); font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; }
+.kbar { position: relative; height: 14px; border-radius: 3px; background: var(--board-track); margin-top: 16px; overflow: hidden; }
+.kbar-fill { position: absolute; inset: 0 auto 0 0; background: var(--b-ok); transition: width .35s ease; }
+.kbar-over { position: absolute; top: 0; bottom: 0; background: var(--b-warn); }
+.kbar .tick { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--board); opacity: .7; }
+.kbar .goal-mark { position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1.5px; background: var(--board-ink); }
+.kcal-left { margin: 10px 0 0; font-weight: 500; }
+.kcal-left .over { color: var(--b-warn); }
+.kcal-left .scale-note { color: var(--board-muted); font-weight: 400; font-size: .8rem; }
+.macros { display: grid; gap: 14px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--board-line); }
+.macro-top { display: flex; align-items: baseline; gap: 8px; }
+.macro-name { flex: 1; min-width: 0; }
+.macro-val { font-variant-numeric: tabular-nums; color: var(--board-muted); }
+.macro-val b { color: var(--board-ink); font-weight: 600; }
+.sw { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
+.sw-p { background: var(--protein); } .sw-c { background: var(--carbs); } .sw-f { background: var(--fat); }
+.board .sw-p, .b-p { background: var(--b-protein); }
+.board .sw-c, .b-c { background: var(--b-carbs); }
+.board .sw-f, .b-f { background: var(--b-fat); }
+.mbar { height: 8px; border-radius: 2px; background: var(--board-track); margin-top: 6px; overflow: hidden; }
+.mbar span { display: block; height: 100%; transition: width .35s ease; }
+.split-wrap { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--board-line); }
+.split { display: flex; height: 10px; border-radius: 2px; overflow: hidden; background: var(--board-track); margin-top: 8px; gap: 2px; }
+.split span { display: block; height: 100%; }
+.split-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: .82rem; color: var(--board-muted);
+  font-variant-numeric: tabular-nums; }
+.split-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Week */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
+.panel h2 { margin: 0; }
+.wc { margin-top: 14px; }
+.wc-plot { position: relative; height: 128px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 2px solid var(--ink); }
+.wc-col { position: relative; height: 100%; background: none; border: 0; padding: 0; cursor: pointer; border-radius: 4px 4px 0 0; }
+.wc-col:hover { background: var(--surface-2); }
+.wc-bar { position: absolute; bottom: 0; left: 22%; right: 22%; background: var(--muted); border-radius: 2px 2px 0 0; transition: height .35s ease; }
+.wc-col.over .wc-bar { background: var(--warn); }
+.wc-col.sel .wc-bar { background: var(--ink); }
+.wc-col.sel.over .wc-bar { background: var(--warn); outline: 2px solid var(--ink); outline-offset: 1px; }
+.wc-val { position: absolute; left: 0; right: 0; text-align: center; font-size: .68rem; color: var(--muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap; transform: translateY(-3px); }
+.wc-col.sel .wc-val { color: var(--ink); font-weight: 600; }
+.wc-goal { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--protein); pointer-events: none; z-index: 1; }
+.wc-goal span { position: absolute; left: 0; bottom: 2px; font-size: .66rem; color: var(--protein); font-weight: 600;
+  background: var(--surface); padding: 0 3px; letter-spacing: .04em; text-transform: uppercase; }
+.wc-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-top: 6px; text-align: center; font-size: .78rem; color: var(--muted); }
+.wc-days .sel { color: var(--ink); font-weight: 600; }
+.wc-days .today { text-decoration: underline; text-underline-offset: 3px; }
+.week-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.stat b { display: block; font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: .82rem; }
+
+/* Ledger */
+.ledger { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+.empty-day { padding: 18px 16px 16px; border-bottom: 1px solid var(--line); }
+.empty-day p { margin: 0 0 10px; max-width: 58ch; }
+.meal { padding: 16px 16px 14px; }
+.meal + .meal { border-top: 1px solid var(--line); }
+.meal-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.meal-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1; letter-spacing: .04em;
+  text-transform: uppercase; margin: 0; }
+.meal-sum { display: flex; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; }
+.meal-sum .kc { font-weight: 600; }
+.meal-sum .mm { color: var(--muted); font-size: .82rem; }
+.items { list-style: none; margin: 10px 0 0; padding: 0; }
+.item-btn { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 14px; width: 100%; text-align: left;
+  background: none; border: 0; border-top: 1px dashed var(--line); padding: 9px 4px; cursor: pointer; border-radius: 0; }
+.item-btn:hover { background: var(--surface-2); }
+.item-name { font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.item-kcal { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.item-sub { grid-column: 1 / -1; color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+.meal-empty { margin: 8px 0 0; color: var(--muted); font-size: .9rem; }
+.meal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.foot { margin-top: 20px; color: var(--muted); font-size: .85rem; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; margin-right: 6px; }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); }
+
+/* FAB */
+.desk-add { display: none; }
+@media (min-width: 880px) { .desk-add { display: inline-flex; } .fab { display: none; } }
+.fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  min-height: 54px; padding: 0 22px; border-radius: 999px; box-shadow: var(--shadow); font-size: 1rem; }
+
+/* Sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: relative; width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow: auto;
+  overscroll-behavior: contain; background: var(--surface); border-radius: 16px 16px 0 0; box-shadow: var(--shadow);
+  padding: 0 16px calc(22px + env(safe-area-inset-bottom, 0px)); animation: sheet-up .2s ease-out; }
+@media (min-width: 700px) {
+  .sheet-wrap { align-items: center; padding: 24px; }
+  .sheet { border-radius: 16px; max-height: 86vh; }
+}
+@keyframes sheet-up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+.sheet-head { position: sticky; top: 0; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 8px;
+  padding-block: 14px 10px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.sheet-head h2 { flex: 1; min-width: 0; margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  line-height: 1; text-transform: uppercase; letter-spacing: .03em; overflow-wrap: anywhere; }
+.sheet h3 { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
+.sheet-section + .sheet-section { margin-top: 16px; }
+.lbl { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 6px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; min-height: 34px;
+  cursor: pointer; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.chip:hover { border-color: var(--muted); }
+.chip[aria-checked="true"], .chip[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; margin-top: 14px; }
+.tab { border: 0; background: none; border-radius: 8px; min-height: 38px; cursor: pointer; font-size: .88rem; font-weight: 500; padding: 0 6px; }
+.tab[aria-selected="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .14); font-weight: 600; }
+
+.field { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; width: 100%; min-height: 46px; }
+.field:focus { border-color: var(--focus); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.hint { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+.hint.warn { color: var(--warn); }
+.err { color: var(--warn); font-size: .88rem; font-weight: 500; margin: 8px 0 0; }
+
+.results { margin-top: 6px; }
+.res-group h3 { margin-top: 18px; }
+.food-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 12px; width: 100%; text-align: left; background: none;
+  border: 0; border-bottom: 1px solid var(--line); padding: 10px 4px; cursor: pointer; }
+.food-row:hover { background: var(--surface-2); }
+.fr-name { font-weight: 500; overflow-wrap: anywhere; }
+.fr-kcal { font-variant-numeric: tabular-nums; font-weight: 600; }
+.fr-meta { grid-column: 1 / -1; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; font-size: .66rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; color: var(--muted); vertical-align: 2px; }
+.no-res { color: var(--muted); padding: 14px 2px; }
+
+.amount-row { display: flex; align-items: center; gap: 10px; }
+.amount-row .field { font-family: var(--font-display); font-weight: 700; font-size: 2rem; max-width: 170px; padding: 4px 12px; font-variant-numeric: tabular-nums; }
+.amount-row .unit { font-weight: 600; color: var(--muted); }
+.preview { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px;
+  margin: 16px 0; padding: 14px 16px; border-radius: 10px; background: var(--surface-2); }
+.pv-kcal { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; line-height: .85; font-variant-numeric: tabular-nums; }
+.pv-kcal small { font-size: .4em; color: var(--muted); letter-spacing: .06em; margin-left: .2em; }
+.pv-macros { display: flex; gap: 14px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.pv-macros span { display: inline-flex; align-items: center; gap: 6px; }
+.per100 { color: var(--muted); font-size: .82rem; margin: 0 0 16px; font-variant-numeric: tabular-nums; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1 1 160px; }
+
+.my-foods { list-style: none; padding: 0; margin: 0; }
+.my-foods li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.my-foods .mf-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.my-foods .mf-meta { display: block; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+textarea.field { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.file-label { position: relative; overflow: hidden; }
+.file-label input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* Toast */
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  display: flex; align-items: center; gap: 14px; max-width: calc(100vw - 32px); width: max-content;
+  background: var(--ink); color: var(--on-ink); border-radius: 10px; padding: 10px 12px 10px 16px; box-shadow: var(--shadow); }
+.toast span { min-width: 0; }
+.toast-act { background: none; border: 1px solid currentColor; color: inherit; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 600; flex: none; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="plate" viewBox="0 0 26 26" aria-hidden="true"><circle class="rim" cx="13" cy="13" r="12"/><circle class="ring" cx="13" cy="13" r="8.5"/><circle class="hub" cx="13" cy="13" r="3"/></svg>
+      Denník potravín
+    </div>
+    <button class="btn" type="button" data-act="open-settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+      Ciele
+    </button>
+  </header>
+
+  <section class="daybar" aria-label="Výber dňa">
+    <div class="day-title">
+      <h1 id="dayTitle">Dnes</h1>
+      <p id="daySub"></p>
+    </div>
+    <div class="daynav">
+      <button class="btn icon-btn" type="button" data-act="prev-day" aria-label="Predchádzajúci deň">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <label class="sr" for="datePick">Dátum</label>
+      <input class="date-input" type="date" id="datePick">
+      <button class="btn icon-btn" type="button" data-act="next-day" aria-label="Nasledujúci deň">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn" type="button" id="todayBtn" data-act="go-today">Dnes</button>
+      <button class="btn primary desk-add" type="button" id="deskAdd" data-act="add">+ Pridať jedlo</button>
+    </div>
+  </section>
+
+  <main class="layout">
+    <div class="rail">
+      <section class="board" id="summary" aria-label="Súhrn dňa"></section>
+      <section class="panel" id="week" aria-labelledby="weekTitle"></section>
+    </div>
+    <div>
+      <section class="ledger" id="ledger" aria-label="Jedlá dňa"></section>
+      <footer class="foot" id="foot"></footer>
+    </div>
+  </main>
+</div>
+
+<button class="btn primary fab" type="button" id="fab" data-act="add">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  Pridať jedlo
+</button>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="scrim" data-act="close-sheet"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span id="toastMsg"></span>
+  <button class="toast-act" type="button" id="toastAct" hidden></button>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- Dáta ---------- */
+
+const MEALS = [
+  { id: 'ranajky', name: 'Raňajky' },
+  { id: 'desiata', name: 'Desiata' },
+  { id: 'obed', name: 'Obed' },
+  { id: 'olovrant', name: 'Olovrant' },
+  { id: 'vecera', name: 'Večera' },
+];
+const MEAL_NAME = Object.fromEntries(MEALS.map(m => [m.id, m.name]));
+
+const CATS = {
+  maso: 'Mäso a ryby',
+  mliecne: 'Mliečne výrobky a vajcia',
+  prilohy: 'Prílohy, obilniny a pečivo',
+  struk: 'Strukoviny a tofu',
+  ovocie: 'Ovocie',
+  zelenina: 'Zelenina',
+  orechy: 'Orechy, semená a oleje',
+  doplnky: 'Doplnky pre športovcov',
+  napoje: 'Nápoje a sladké',
+  jedla: 'Hotové jedlá',
+};
+
+// [id, názov, kategória, kcal, bielkoviny, sacharidy, tuky, jednotka, gramy na jednotku] — hodnoty na 100 g, orientačné
+const FOOD_DATA = [
+  ['kur-prsia', 'Kuracie prsia (surové)', 'maso', 120, 22.5, 0, 2.6],
+  ['kur-prsia-gril', 'Kuracie prsia (grilované)', 'maso', 165, 31, 0, 3.6],
+  ['kur-stehno', 'Kuracie stehno bez kože (surové)', 'maso', 121, 19.7, 0, 4.1],
+  ['morka', 'Morčacie prsia (surové)', 'maso', 111, 24.6, 0, 1],
+  ['hov-mlete', 'Hovädzie mleté 10 % tuku (surové)', 'maso', 176, 20, 0, 10],
+  ['hov-zadne', 'Hovädzie zadné (surové)', 'maso', 125, 22, 0, 4],
+  ['brav-panenka', 'Bravčová panenka (surová)', 'maso', 120, 21, 0, 3.5],
+  ['brav-kare', 'Bravčové karé (surové)', 'maso', 143, 21.4, 0, 5.7],
+  ['sunka', 'Šunka výberová', 'maso', 110, 19, 1, 3.2, 'plátok', 15],
+  ['losos', 'Losos (surový)', 'maso', 208, 20, 0, 13],
+  ['tuniak', 'Tuniak vo vlastnej šťave (scedený)', 'maso', 116, 25.5, 0, 0.8, 'konzerva', 112],
+  ['treska', 'Treska (surová)', 'maso', 82, 18, 0, 0.7],
+  ['krevety', 'Krevety (surové)', 'maso', 85, 20, 0, 0.5],
+
+  ['vajce', 'Vajce (celé)', 'mliecne', 143, 12.6, 0.7, 9.5, 'ks', 55],
+  ['bielok', 'Vaječný bielok', 'mliecne', 52, 10.9, 0.7, 0.2, 'ks', 33],
+  ['mlieko15', 'Mlieko polotučné 1,5 %', 'mliecne', 47, 3.4, 4.8, 1.5, 'pohár', 250],
+  ['mlieko35', 'Mlieko plnotučné 3,5 %', 'mliecne', 64, 3.3, 4.7, 3.5, 'pohár', 250],
+  ['gr-jog0', 'Grécky jogurt 0 %', 'mliecne', 59, 10.3, 3.6, 0.4, 'kelímok', 150],
+  ['gr-jog10', 'Jogurt grécky typ 10 %', 'mliecne', 126, 3.6, 4.6, 10, 'kelímok', 150],
+  ['jog-biely', 'Biely jogurt 3 %', 'mliecne', 63, 3.8, 5, 3, 'kelímok', 150],
+  ['skyr', 'Skyr bez príchute', 'mliecne', 63, 11, 4, 0.2, 'kelímok', 140],
+  ['tvaroh-ntuc', 'Tvaroh nízkotučný', 'mliecne', 75, 13, 4, 0.5, 'balenie', 250],
+  ['tvaroh-ptuc', 'Tvaroh polotučný', 'mliecne', 116, 11.3, 3.5, 6, 'balenie', 250],
+  ['cottage', 'Cottage cheese', 'mliecne', 98, 11.1, 3.4, 4.3, 'kelímok', 150],
+  ['kefir', 'Kefír', 'mliecne', 52, 3.3, 4.4, 2.3, 'pohár', 250],
+  ['bryndza', 'Bryndza', 'mliecne', 286, 17, 1.5, 23.5],
+  ['mozzarella', 'Mozzarella', 'mliecne', 250, 18, 1, 19, 'guľa', 125],
+  ['eidam30', 'Eidam 30 %', 'mliecne', 263, 29, 0.1, 16, 'plátok', 20],
+  ['eidam45', 'Eidam 45 %', 'mliecne', 350, 26, 0.1, 27, 'plátok', 20],
+  ['maslo', 'Maslo', 'mliecne', 717, 0.9, 0.1, 81, 'lyžička', 5],
+
+  ['ryza', 'Ryža biela (suchá)', 'prilohy', 360, 7, 79, 0.6],
+  ['ryza-var', 'Ryža biela (varená)', 'prilohy', 130, 2.7, 28, 0.3],
+  ['ryza-nat', 'Ryža natural (suchá)', 'prilohy', 370, 7.9, 77, 2.9],
+  ['cestoviny', 'Cestoviny (suché)', 'prilohy', 371, 13, 75, 1.5],
+  ['cestoviny-var', 'Cestoviny (varené)', 'prilohy', 158, 5.8, 31, 0.9],
+  ['vlocky', 'Ovsené vločky', 'prilohy', 379, 13.2, 67.7, 6.5],
+  ['zemiaky', 'Zemiaky (surové)', 'prilohy', 77, 2, 17, 0.1],
+  ['zemiaky-var', 'Zemiaky varené', 'prilohy', 87, 1.9, 20, 0.1],
+  ['batat', 'Batáty (surové)', 'prilohy', 86, 1.6, 20, 0.1],
+  ['chlieb', 'Chlieb pšenično-ražný', 'prilohy', 240, 8, 48, 1.5, 'krajec', 40],
+  ['chlieb-cel', 'Chlieb celozrnný', 'prilohy', 252, 12.4, 42.7, 3.5, 'krajec', 40],
+  ['rozok', 'Rožok biely', 'prilohy', 285, 9, 56, 2.8, 'ks', 40],
+  ['tortilla', 'Tortilla pšeničná', 'prilohy', 310, 8.5, 52, 7.5, 'ks', 60],
+  ['ryz-chlebicky', 'Ryžové chlebíčky', 'prilohy', 387, 8, 81, 2.8, 'ks', 8],
+  ['quinoa', 'Quinoa (suchá)', 'prilohy', 368, 14, 64, 6],
+  ['kuskus', 'Kuskus (suchý)', 'prilohy', 376, 12.8, 77, 0.6],
+
+  ['sosovica', 'Šošovica červená (suchá)', 'struk', 358, 23.9, 63, 2.2],
+  ['cicer', 'Cícer sterilizovaný (scedený)', 'struk', 139, 7, 22.5, 2.5],
+  ['fazula', 'Červená fazuľa sterilizovaná (scedená)', 'struk', 110, 7.5, 18, 0.6],
+  ['tofu', 'Tofu natural', 'struk', 144, 17.3, 2.8, 8.7],
+
+  ['banan', 'Banán', 'ovocie', 89, 1.1, 22.8, 0.3, 'ks', 120],
+  ['jablko', 'Jablko', 'ovocie', 52, 0.3, 13.8, 0.2, 'ks', 180],
+  ['hruska', 'Hruška', 'ovocie', 57, 0.4, 15.2, 0.1, 'ks', 170],
+  ['pomaranc', 'Pomaranč', 'ovocie', 47, 0.9, 11.8, 0.1, 'ks', 140],
+  ['jahody', 'Jahody', 'ovocie', 32, 0.7, 7.7, 0.3],
+  ['cucoriedky', 'Čučoriedky', 'ovocie', 57, 0.7, 14.5, 0.3],
+  ['hrozno', 'Hrozno', 'ovocie', 69, 0.7, 18, 0.2],
+  ['kiwi', 'Kiwi', 'ovocie', 61, 1.1, 14.7, 0.5, 'ks', 75],
+  ['avokado', 'Avokádo', 'ovocie', 160, 2, 8.5, 14.7, 'ks', 140],
+  ['datle', 'Datle sušené', 'ovocie', 282, 2.5, 75, 0.4, 'ks', 7],
+
+  ['brokolica', 'Brokolica', 'zelenina', 34, 2.8, 6.6, 0.4],
+  ['paradajka', 'Paradajka', 'zelenina', 18, 0.9, 3.9, 0.2, 'ks', 120],
+  ['uhorka', 'Uhorka šalátová', 'zelenina', 15, 0.7, 3.6, 0.1],
+  ['paprika', 'Paprika červená', 'zelenina', 31, 1, 6, 0.3, 'ks', 150],
+  ['mrkva', 'Mrkva', 'zelenina', 41, 0.9, 9.6, 0.2, 'ks', 70],
+  ['spenat', 'Špenát', 'zelenina', 23, 2.9, 3.6, 0.4],
+  ['salat', 'Šalát ľadový', 'zelenina', 14, 0.9, 3, 0.1],
+  ['cibula', 'Cibuľa', 'zelenina', 40, 1.1, 9.3, 0.1, 'ks', 100],
+  ['cuketa', 'Cuketa', 'zelenina', 17, 1.2, 3.1, 0.3],
+  ['sampinony', 'Šampiňóny', 'zelenina', 22, 3.1, 3.3, 0.3],
+  ['kapusta-kysla', 'Kyslá kapusta', 'zelenina', 19, 0.9, 4.3, 0.1],
+
+  ['arasid-maslo', 'Arašidové maslo', 'orechy', 588, 25, 20, 50, 'lyžica', 15],
+  ['mandle', 'Mandle', 'orechy', 579, 21, 21.6, 49.9, 'hrsť', 30],
+  ['vlasske', 'Vlašské orechy', 'orechy', 654, 15.2, 13.7, 65.2, 'hrsť', 30],
+  ['kesu', 'Kešu orechy', 'orechy', 553, 18.2, 30.2, 43.9, 'hrsť', 30],
+  ['chia', 'Chia semienka', 'orechy', 486, 16.5, 42, 30.7, 'lyžica', 12],
+  ['olivovy', 'Olivový olej', 'orechy', 884, 0, 0, 100, 'lyžica', 13],
+  ['olej', 'Rastlinný olej (slnečnicový, repkový)', 'orechy', 884, 0, 0, 100, 'lyžica', 13],
+
+  ['whey', 'Srvátkový proteín WPC 80', 'doplnky', 400, 78, 8, 6, 'odmerka', 30],
+  ['whey-iso', 'Srvátkový izolát WPI 90', 'doplnky', 370, 88, 3, 1, 'odmerka', 30],
+  ['prot-tycinka', 'Proteínová tyčinka (priemer)', 'doplnky', 370, 32, 35, 12, 'ks', 55],
+
+  ['dzus', 'Pomarančový džús 100 %', 'napoje', 45, 0.7, 10.4, 0.2, 'pohár', 250],
+  ['kola', 'Kola sladená', 'napoje', 42, 0, 10.6, 0, 'plechovka', 330],
+  ['pivo', 'Pivo svetlé 10°', 'napoje', 36, 0.4, 3.3, 0, 'pollitra', 500],
+  ['med', 'Med', 'napoje', 304, 0.3, 82, 0, 'lyžička', 7],
+  ['cukor', 'Cukor', 'napoje', 400, 0, 100, 0, 'lyžička', 5],
+  ['cokolada', 'Horká čokoláda 70 %', 'napoje', 598, 7.8, 46, 42.6],
+
+  ['halusky', 'Bryndzové halušky', 'jedla', 200, 7, 23, 9, 'porcia', 350],
+  ['kapustnica', 'Kapustnica', 'jedla', 55, 3, 4, 3.3, 'tanier', 350],
+  ['vyprazany-syr', 'Vyprážaný syr', 'jedla', 330, 15, 18, 22, 'porcia', 150],
+  ['pizza', 'Pizza Margherita', 'jedla', 250, 10.5, 31, 9],
+];
+const FOODS = FOOD_DATA.map(([id, name, cat, kcal, p, c, f, un, ug]) =>
+  ({ id, name, cat, kcal, p, c, f, unit: un ? { name: un, g: ug } : null }));
+const FOOD_BY_ID = new Map(FOODS.map(f => [f.id, f]));
+
+const SUGGEST = [['vlocky', 60], ['vajce', 110], ['kur-prsia', 150], ['ryza', 80], ['tvaroh-ntuc', 250], ['banan', 120], ['whey', 30]];
+const DEFAULT_GOALS = { kcal: 2400, p: 160, c: 270, f: 75 };
+const LS_KEY = 'dennik-potravin:v1';
+
+/* ---------- Pomocné ---------- */
+
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const nf0 = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 1 });
+const fk = n => nf0.format(Math.round(n || 0));
+const fm = n => { n = n || 0; return (Math.abs(n) < 10 ? nf1 : nf0).format(n); };
+const r1 = n => Math.round((n || 0) * 10) / 10;
+const num = v => { const n = parseFloat(String(v ?? '').replace(/\s/g, '').replace(',', '.')); return Number.isFinite(n) ? n : NaN; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const clone = o => JSON.parse(JSON.stringify(o));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const pad = n => String(n).padStart(2, '0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dateOf = key => { const [y, m, d] = key.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (key, n) => { const d = dateOf(key); d.setDate(d.getDate() + n); return keyOf(d); };
+const todayKey = () => keyOf(new Date());
+const isDayKey = k => /^\d{4}-\d{2}-\d{2}$/.test(k);
+const dfLong = new Intl.DateTimeFormat('sk-SK', { weekday: 'long', day: 'numeric', month: 'long' });
+const dfDate = new Intl.DateTimeFormat('sk-SK', { day: 'numeric', month: 'long' });
+const dfDateY = new Intl.DateTimeFormat('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' });
+const dfWd = new Intl.DateTimeFormat('sk-SK', { weekday: 'long' });
+const dfShort = new Intl.DateTimeFormat('sk-SK', { weekday: 'short' });
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function dayTitle(key) {
+  const diff = Math.round((dateOf(key) - dateOf(todayKey())) / 864e5);
+  const d = dateOf(key);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  if (diff === 0) return { title: 'Dnes', sub: dfLong.format(d) };
+  if (diff === -1) return { title: 'Včera', sub: dfLong.format(d) };
+  if (diff === 1) return { title: 'Zajtra', sub: dfLong.format(d) };
+  return { title: cap(dfWd.format(d)), sub: (sameYear ? dfDate : dfDateY).format(d) };
+}
+
+function defaultMeal() {
+  const n = new Date(), h = n.getHours() + n.getMinutes() / 60;
+  return h < 9.5 ? 'ranajky' : h < 11.5 ? 'desiata' : h < 14.5 ? 'obed' : h < 17.5 ? 'olovrant' : 'vecera';
+}
+
+const totals = items => items.reduce((a, it) => ({
+  kcal: a.kcal + (+it.kcal || 0), p: a.p + (+it.p || 0), c: a.c + (+it.c || 0), f: a.f + (+it.f || 0),
+}), { kcal: 0, p: 0, c: 0, f: 0 });
+
+const fromPer = (per, g) => ({ kcal: r1(per.kcal * g / 100), p: r1(per.p * g / 100), c: r1(per.c * g / 100), f: r1(per.f * g / 100) });
+const macroKcal = (p, c, f) => p * 4 + c * 4 + f * 9;
+const per100Text = f => `${fk(f.kcal)} kcal · B ${fm(f.p)} · S ${fm(f.c)} · T ${fm(f.f)}`;
+
+/* ---------- Stav ---------- */
+
+const S = {
+  date: todayKey(),
+  days: {},
+  goals: { ...DEFAULT_GOALS },
+  foods: [],
+  mode: 'loading', // loading | cloud | local | memory
+};
+const UI = { sheet: null, lastFocus: null, pick: new Map(), today: todayKey() };
+const dayItems = key => (S.days[key] && S.days[key].items) || [];
+
+function normalizeGoals(g) {
+  const out = { ...DEFAULT_GOALS };
+  if (g && typeof g === 'object') for (const k of Object.keys(out)) { const v = +g[k]; if (Number.isFinite(v) && v > 0) out[k] = v; }
+  return out;
+}
+function cleanPer(p) {
+  if (!p || typeof p !== 'object') return null;
+  const o = {};
+  for (const k of ['kcal', 'p', 'c', 'f']) { const v = +p[k]; if (!Number.isFinite(v) || v < 0) return null; o[k] = v; }
+  return o;
+}
+function cleanUnit(u) {
+  if (!u || typeof u !== 'object') return null;
+  const g = +u.g;
+  return typeof u.name === 'string' && u.name.trim() && Number.isFinite(g) && g > 0 ? { name: u.name.trim().slice(0, 30), g } : null;
+}
+function cleanItem(it) {
+  if (!it || typeof it !== 'object') return null;
+  const n = k => { const v = +it[k]; return Number.isFinite(v) && v >= 0 ? v : 0; };
+  const g = +it.g;
+  return {
+    id: typeof it.id === 'string' && it.id ? it.id.slice(0, 40) : uid(),
+    meal: MEAL_NAME[it.meal] ? it.meal : 'obed',
+    name: String(it.name || 'Bez názvu').slice(0, 120),
+    g: Number.isFinite(g) && g > 0 ? g : null,
+    kcal: n('kcal'), p: n('p'), c: n('c'), f: n('f'),
+    per: cleanPer(it.per),
+    fid: typeof it.fid === 'string' ? it.fid.slice(0, 60) : null,
+    unit: cleanUnit(it.unit),
+    t: Number.isFinite(+it.t) ? +it.t : Date.now(),
+  };
+}
+function cleanFood(f) {
+  if (!f || typeof f !== 'object' || typeof f.name !== 'string' || !f.name.trim()) return null;
+  const per = cleanPer(f);
+  if (!per) return null;
+  return { id: typeof f.id === 'string' && f.id ? f.id.slice(0, 60) : 'c_' + uid(), name: f.name.trim().slice(0, 120), ...per, unit: cleanUnit(f.unit), custom: true };
+}
+
+/* ---------- Úložisko ---------- */
+
+const Cloud = { col: null, queue: {} };
+const DEL = { del: true };
+
+function lsGet() { try { return localStorage.getItem(LS_KEY); } catch (e) { return null; } }
+function lsSet(v) { try { localStorage.setItem(LS_KEY, v); return true; } catch (e) { return false; } }
+
+function startLocal() {
+  const raw = lsGet();
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      S.goals = normalizeGoals(d.goals);
+      S.foods = (Array.isArray(d.foods) ? d.foods : []).map(cleanFood).filter(Boolean);
+      S.days = {};
+      for (const [k, v] of Object.entries(d.days || {})) {
+        if (!isDayKey(k) || !v || !Array.isArray(v.items)) continue;
+        const items = v.items.map(cleanItem).filter(Boolean);
+        if (items.length) S.days[k] = { items };
+      }
+    } catch (e) { /* poškodené dáta ignorujeme */ }
+  }
+  S.mode = lsSet(raw ?? JSON.stringify({ v: 1, days: {}, goals: S.goals, foods: [] })) ? 'local' : 'memory';
+  render();
+}
+
+function saveLocal() {
+  if (S.mode !== 'local') return Promise.resolve();
+  if (!lsSet(JSON.stringify({ v: 1, days: S.days, goals: S.goals, foods: S.foods }))) {
+    S.mode = 'memory';
+    renderFoot();
+    toast('Prehliadač nedovolil uložiť záznamy. Exportuj si zálohu v Cieľoch, kým stránku zavrieš.');
+  }
+  return Promise.resolve();
+}
+
+function startCloud(db, userId) {
+  Cloud.col = db.collection('data/users/' + userId);
+  S.mode = 'cloud';
+  renderFoot();
+  subscribe();
+}
+
+let resubscribed = false;
+function subscribe() {
+  Cloud.col.onSnapshot(applySnapshot, err => {
+    if (err && err.code === 'unavailable' && !resubscribed) { resubscribed = true; setTimeout(subscribe, 1500); return; }
+    toast('Spojenie s úložiskom sa prerušilo. Obnov stránku.');
+  });
+}
+
+const isPending = id => { const q = Cloud.queue[id]; return !!(q && (q.busy || q.next !== undefined)); };
+
+function applySnapshot(snap) {
+  const days = {};
+  let goals = null, foods = null;
+  for (const doc of snap.docs) {
+    const v = doc.data();
+    if (!v) continue;
+    if (doc.id === 'settings') goals = v.goals;
+    else if (doc.id === 'foods') foods = v.list;
+    else if (doc.id.startsWith('d') && isDayKey(v.date) && Array.isArray(v.items)) {
+      const items = v.items.map(cleanItem).filter(Boolean);
+      if (items.length) days[v.date] = { items };
+    }
+  }
+  // Dokumenty s ešte neodoslaným zápisom nechávame tak, ako ich má stránka.
+  for (const k of Object.keys(days)) if (isPending('d' + k)) delete days[k];
+  for (const [k, v] of Object.entries(S.days)) if (isPending('d' + k)) days[k] = v;
+  S.days = days;
+  if (!isPending('settings')) S.goals = normalizeGoals(goals);
+  if (!isPending('foods')) S.foods = (Array.isArray(foods) ? foods : []).map(cleanFood).filter(Boolean);
+  render();
+  if (UI.sheet && UI.sheet.view === 'settings') renderMyFoods();
+}
+
+function cloudWrite(id, data) {
+  const q = Cloud.queue[id] || (Cloud.queue[id] = { busy: false, next: undefined, waiters: [] });
+  q.next = data === DEL ? DEL : clone(data);
+  const done = new Promise(r => q.waiters.push(r));
+  if (!q.busy) flushQueue(id, q);
+  return done;
+}
+
+async function flushQueue(id, q) {
+  q.busy = true;
+  while (q.next !== undefined) {
+    const data = q.next;
+    q.next = undefined;
+    const waiters = q.waiters.splice(0);
+    const ref = Cloud.col.doc(id);
+    const run = () => (data === DEL ? ref.delete() : ref.set(data));
+    let failed = null;
+    try { await run(); }
+    catch (e) {
+      if (e && e.code === 'unavailable') {
+        await sleep(400 + Math.random() * 800);
+        try { await run(); } catch (e2) { failed = e2; }
+      } else failed = e;
+    }
+    if (failed) reportWriteError(failed);
+    waiters.forEach(r => r());
+  }
+  q.busy = false;
+}
+
+function reportWriteError(e) {
+  const code = e && e.code;
+  const msg = code === 'invalid_argument' ? 'Zmena sa neuložila: k tejto stránke máš prístup len na čítanie.'
+    : code === 'quota_exceeded' ? 'Úložisko je plné. Exportuj zálohu a vymaž staré záznamy.'
+    : code === 'resource_exhausted' ? 'Príliš veľa zmien naraz. Skús to o chvíľu znova.'
+    : 'Zmena sa neuložila. Skontroluj pripojenie a skús to znova.';
+  toast(msg);
+  if (Cloud.col) Cloud.col.get().then(applySnapshot).catch(() => {});
+}
+
+function saveDay(key) {
+  const day = S.days[key];
+  if (day && !day.items.length) delete S.days[key];
+  if (S.mode === 'cloud') {
+    const live = S.days[key];
+    return cloudWrite('d' + key, live ? { kind: 'day', date: key, items: live.items } : DEL);
+  }
+  return saveLocal();
+}
+function saveGoals() { return S.mode === 'cloud' ? cloudWrite('settings', { kind: 'settings', goals: S.goals }) : saveLocal(); }
+function saveFoods() {
+  return S.mode === 'cloud'
+    ? cloudWrite('foods', { kind: 'foods', list: S.foods.map(({ custom, ...f }) => f) })
+    : saveLocal();
+}
+
+/* ---------- Úpravy denníka ---------- */
+
+function addItem(key, item) {
+  const day = S.days[key] || (S.days[key] = { items: [] });
+  day.items.push(item);
+  saveDay(key);
+}
+function removeItems(key, ids) {
+  const day = S.days[key];
+  if (!day) return [];
+  const removed = day.items.filter(it => ids.includes(it.id));
+  day.items = day.items.filter(it => !ids.includes(it.id));
+  saveDay(key);
+  return removed;
+}
+function itemFromFood(food, g, meal) {
+  const per = { kcal: food.kcal, p: food.p, c: food.c, f: food.f };
+  return { id: uid(), meal, name: food.name, g, ...fromPer(per, g), per, fid: food.adhoc ? null : food.id, unit: food.unit || null, t: Date.now() };
+}
+
+function findFood(id) { return S.foods.find(f => f.id === id) || FOOD_BY_ID.get(id) || null; }
+
+function recentFoods(limit) {
+  const out = [], seen = new Set();
+  for (const k of Object.keys(S.days).sort().reverse()) {
+    const items = S.days[k].items.slice().sort((a, b) => (b.t || 0) - (a.t || 0));
+    for (const it of items) {
+      if (!it.per) continue;
+      const key = it.fid || 'n:' + norm(it.name);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const base = it.fid && findFood(it.fid);
+      out.push(base ? { ...base, lastG: it.g } : { id: 'item:' + it.id, name: it.name, ...it.per, unit: it.unit, lastG: it.g, adhoc: true });
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}
+
+/* ---------- Vykresľovanie ---------- */
+
+function render() {
+  renderDaybar();
+  renderSummary();
+  renderWeek();
+  renderLedger();
+  renderFoot();
+}
+
+function renderDaybar() {
+  const { title, sub } = dayTitle(S.date);
+  $('#dayTitle').textContent = title;
+  $('#daySub').textContent = sub;
+  $('#datePick').value = S.date;
+  $('#todayBtn').disabled = S.date === todayKey();
+  $('#fab').disabled = $('#deskAdd').disabled = S.mode === 'loading';
+}
+
+function renderSummary() {
+  const t = totals(dayItems(S.date));
+  const g = S.goals;
+  const scale = Math.max(g.kcal, t.kcal) || 1;
+  const fillPct = Math.min(t.kcal, g.kcal) / scale * 100;
+  const goalPct = g.kcal / scale * 100;
+  const overPct = Math.max(0, t.kcal - g.kcal) / scale * 100;
+  let ticks = '';
+  for (let v = 500; v < scale; v += 500) ticks += `<span class="tick" style="left:${(v / scale * 100).toFixed(2)}%"></span>`;
+  const left = g.kcal - t.kcal;
+  const leftText = left >= 0
+    ? `Zostáva <b>${fk(left)} kcal</b>`
+    : `<span class="over">Nad cieľom o <b>${fk(-left)} kcal</b></span>`;
+  const macro = (key, name, cls) => {
+    const v = t[key], goal = g[key];
+    return `<div class="macro">
+      <div class="macro-top"><span class="sw ${cls}"></span><span class="macro-name">${name}</span>
+        <span class="macro-val"><b>${fk(v)}</b> / ${fk(goal)} g</span></div>
+      <div class="mbar" role="progressbar" aria-label="${name}" aria-valuemin="0" aria-valuemax="${Math.round(goal)}" aria-valuenow="${Math.round(v)}">
+        <span class="${cls.replace('sw-', 'b-')}" style="width:${Math.min(100, v / goal * 100).toFixed(1)}%"></span></div>
+    </div>`;
+  };
+  const pk = t.p * 4, ck = t.c * 4, fkc = t.f * 9, mk = pk + ck + fkc;
+  const pct = v => mk ? Math.round(v / mk * 100) : 0;
+  $('#summary').innerHTML = `
+    <p class="eyebrow">${S.date === todayKey() ? 'Prijaté dnes' : 'Prijaté v tento deň'}</p>
+    <div class="kcal-row">
+      <div class="kcal-big">${fk(t.kcal)}<small>kcal</small></div>
+      <div class="kcal-goal">cieľ<b>${fk(g.kcal)}</b></div>
+    </div>
+    <div class="kbar" role="progressbar" aria-label="Prijaté kalórie" aria-valuemin="0" aria-valuemax="${Math.round(g.kcal)}" aria-valuenow="${Math.round(t.kcal)}">
+      <div class="kbar-fill" style="width:${fillPct.toFixed(2)}%"></div>
+      ${overPct ? `<div class="kbar-over" style="left:${goalPct.toFixed(2)}%;width:${overPct.toFixed(2)}%"></div>` : ''}
+      ${ticks}
+      ${overPct ? `<span class="goal-mark" style="left:${goalPct.toFixed(2)}%"></span>` : ''}
+    </div>
+    <p class="kcal-left">${leftText} <span class="scale-note">· dieliky po 500 kcal</span></p>
+    <div class="macros">
+      ${macro('p', 'Bielkoviny', 'sw-p')}
+      ${macro('c', 'Sacharidy', 'sw-c')}
+      ${macro('f', 'Tuky', 'sw-f')}
+    </div>
+    <div class="split-wrap">
+      <p class="eyebrow">Energia z makier</p>
+      <div class="split" aria-hidden="true">
+        ${mk ? `<span class="b-p" style="flex:${pk}"></span><span class="b-c" style="flex:${ck}"></span><span class="b-f" style="flex:${fkc}"></span>` : ''}
+      </div>
+      <div class="split-legend">
+        <span><i class="sw sw-p"></i>B ${pct(pk)} %</span>
+        <span><i class="sw sw-c"></i>S ${pct(ck)} %</span>
+        <span><i class="sw sw-f"></i>T ${pct(fkc)} %</span>
+        <span>1 g B a S = 4 kcal, 1 g T = 9 kcal</span>
+      </div>
+    </div>`;
+}
+
+function renderWeek() {
+  const keys = Array.from({ length: 7 }, (_, i) => addDays(S.date, i - 6));
+  const vals = keys.map(k => totals(dayItems(k)));
+  const goal = S.goals.kcal;
+  const scale = Math.max(goal, ...vals.map(v => v.kcal)) * 1.18 || 1;
+  const today = todayKey();
+  const logged = vals.filter(v => v.kcal > 0);
+  const avg = key => logged.length ? logged.reduce((a, v) => a + v[key], 0) / logged.length : 0;
+  const cols = keys.map((k, i) => {
+    const v = vals[i].kcal;
+    const h = v / scale * 100;
+    const cls = ['wc-col', k === S.date ? 'sel' : '', v > goal ? 'over' : ''].join(' ');
+    const label = `${cap(dfLong.format(dateOf(k)))}: ${v ? fk(v) + ' kcal' : 'nič zapísané'}`;
+    return `<button type="button" class="${cls}" data-act="go-day" data-date="${k}" aria-label="${esc(label)}" title="${esc(label)}">
+      <span class="wc-bar" style="height:${h.toFixed(2)}%"></span>
+      ${v ? `<span class="wc-val" style="bottom:${h.toFixed(2)}%">${fk(v)}</span>` : ''}
+    </button>`;
+  }).join('');
+  const days = keys.map(k => `<span class="${k === S.date ? 'sel' : ''} ${k === today ? 'today' : ''}">${dfShort.format(dateOf(k))}</span>`).join('');
+  $('#week').innerHTML = `
+    <h2 class="eyebrow" id="weekTitle">Posledných 7 dní</h2>
+    <div class="wc">
+      <div class="wc-plot">
+        <div class="wc-goal" style="bottom:${(goal / scale * 100).toFixed(2)}%"><span>cieľ ${fk(goal)}</span></div>
+        ${cols}
+      </div>
+      <div class="wc-days" aria-hidden="true">${days}</div>
+    </div>
+    <div class="week-stats">
+      <div class="stat"><b>${logged.length ? fk(avg('kcal')) : '–'}</b><span>priemer kcal za zapísané dni</span></div>
+      <div class="stat"><b>${logged.length ? fk(avg('p')) + ' g' : '–'}</b><span>priemerne bielkovín</span></div>
+    </div>
+    <p class="hint">Zapísané ${logged.length} zo 7 dní. Ťukni na stĺpec a prejdeš na daný deň.</p>`;
+}
+
+function renderLedger() {
+  const items = dayItems(S.date);
+  const yItems = dayItems(addDays(S.date, -1));
+  const loading = S.mode === 'loading';
+  let html = '';
+  if (!items.length) {
+    html += `<div class="empty-day">
+      <p>${loading ? 'Načítavam tvoje záznamy…' : 'Na tento deň zatiaľ nie je nič zapísané. Pridaj jedlo k raňajkám, obedu či večeri, alebo začni jedným z častých:'}</p>
+      ${loading ? '' : `<div class="chips">${SUGGEST.map(([id, g]) => {
+        const f = FOOD_BY_ID.get(id);
+        return `<button type="button" class="chip" data-act="suggest" data-fid="${id}" data-g="${g}">${esc(f.name.replace(/ \(.*\)$/, ''))} ${fk(g)} g</button>`;
+      }).join('')}</div>`}
+    </div>`;
+  }
+  for (const m of MEALS) {
+    const mi = items.filter(it => it.meal === m.id).sort((a, b) => (a.t || 0) - (b.t || 0));
+    const t = totals(mi);
+    const yCount = yItems.filter(it => it.meal === m.id).length;
+    html += `<section class="meal" aria-labelledby="h-${m.id}">
+      <header class="meal-head">
+        <h2 id="h-${m.id}">${m.name}</h2>
+        ${mi.length ? `<div class="meal-sum"><span class="mm">B ${fk(t.p)} · S ${fk(t.c)} · T ${fk(t.f)}</span><span class="kc">${fk(t.kcal)} kcal</span></div>` : ''}
+      </header>
+      ${mi.length ? `<ul class="items">${mi.map(it => `<li>
+        <button type="button" class="item-btn" data-act="edit-item" data-id="${esc(it.id)}">
+          <span class="item-name">${esc(it.name)}</span>
+          <span class="item-kcal">${fk(it.kcal)} kcal</span>
+          <span class="item-sub">${it.g ? fk(it.g) + ' g' + (it.unit && Math.abs(it.g / it.unit.g - Math.round(it.g / it.unit.g)) < 0.01 && it.g >= it.unit.g ? ` (${fm(it.g / it.unit.g)} ${esc(it.unit.name)})` : '') + ' · ' : 'porcia · '}B ${fm(it.p)} · S ${fm(it.c)} · T ${fm(it.f)}</span>
+        </button></li>`).join('')}</ul>` : `<p class="meal-empty">Zatiaľ nič.</p>`}
+      <div class="meal-actions">
+        <button type="button" class="btn small" data-act="add" data-meal="${m.id}" ${loading ? 'disabled' : ''}>+ Pridať</button>
+        ${yCount && !loading ? `<button type="button" class="btn small ghost" data-act="copy-yday" data-meal="${m.id}">Kopírovať z predošlého dňa (${yCount})</button>` : ''}
+      </div>
+    </section>`;
+  }
+  $('#ledger').innerHTML = html;
+}
+
+function storageText() {
+  return {
+    loading: ['', 'Pripájam úložisko…'],
+    cloud: ['ok', 'Záznamy sa ukladajú do tvojho účtu. Vidíš ich len ty.'],
+    local: ['ok', 'Záznamy sa ukladajú v tomto prehliadači.'],
+    memory: ['warn', 'Záznamy sa nedajú uložiť a po zatvorení stránky zmiznú. Exportuj si zálohu.'],
+  }[S.mode];
+}
+
+function renderFoot() {
+  const [cls, text] = storageText();
+  $('#foot').innerHTML = `<span><i class="dot ${cls}"></i>${esc(text)}</span>
+    <button type="button" class="linklike" data-act="open-settings">Ciele, moje potraviny a záloha</button>
+    <span>Nutričné hodnoty v databáze sú orientačné, na 100 g.</span>`;
+  $('#fab').disabled = $('#deskAdd').disabled = S.mode === 'loading';
+}
+
+/* ---------- Spodný panel ---------- */
+
+function openSheet(state) {
+  if (!UI.sheet) UI.lastFocus = document.activeElement;
+  UI.sheet = state;
+  $('#sheetWrap').hidden = false;
+  document.documentElement.classList.add('locked');
+  renderSheet(true);
+}
+function closeSheet() {
+  UI.sheet = null;
+  $('#sheetWrap').hidden = true;
+  $('#sheet').innerHTML = '';
+  document.documentElement.classList.remove('locked');
+  if (UI.lastFocus && document.contains(UI.lastFocus)) UI.lastFocus.focus();
+}
+
+const closeBtn = `<button type="button" class="btn ghost icon-btn" data-act="close-sheet" aria-label="Zavrieť">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+const backBtn = `<button type="button" class="btn ghost icon-btn" data-act="back" aria-label="Späť">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>`;
+
+function mealChips(sel) {
+  return `<div class="sheet-section"><span class="lbl" id="mealLbl">Jedlo dňa</span>
+    <div class="chips" role="radiogroup" aria-labelledby="mealLbl">${MEALS.map(m =>
+      `<button type="button" class="chip" role="radio" aria-checked="${m.id === sel}" data-act="set-meal" data-meal="${m.id}">${m.name}</button>`).join('')}</div></div>`;
+}
+
+function renderSheet(focus) {
+  const st = UI.sheet;
+  const el = $('#sheet');
+  if (!st) return;
+  if (st.view === 'add') el.innerHTML = viewAdd(st);
+  else if (st.view === 'amount') el.innerHTML = viewAmount(st);
+  else if (st.view === 'edit') el.innerHTML = viewEdit(st);
+  else if (st.view === 'settings') el.innerHTML = viewSettings();
+  el.scrollTop = 0;
+  if (st.view === 'add' && st.tab === 'search') { $('#foodSearch').value = st.q || ''; renderResults(); }
+  if (st.view === 'amount' || st.view === 'edit') updatePreview();
+  if (st.view === 'add' && st.tab === 'custom') updateCustomCheck();
+  if (st.view === 'settings') { renderMyFoods(); updateGoalCheck(); }
+  if (focus) {
+    const target = st.view === 'add' ? el.querySelector('#foodSearch, #cfName, #qName')
+      : st.view === 'amount' ? $('#amountG') : el.querySelector('.sheet-head h2');
+    if (target) { if (target.tagName === 'H2') target.tabIndex = -1; target.focus({ preventScroll: true }); if (target.select) target.select(); }
+  }
+}
+
+function viewAdd(st) {
+  const tab = (id, label) => `<button type="button" class="tab" role="tab" aria-selected="${st.tab === id}" data-act="tab" data-tab="${id}">${label}</button>`;
+  let body = '';
+  if (st.tab === 'search') {
+    body = `<div class="sheet-section">
+      <label class="lbl" for="foodSearch">Hľadať potravinu</label>
+      <input class="field" type="search" id="foodSearch" placeholder="napr. ryža, tvaroh, vajce" autocomplete="off" enterkeyhint="search">
+      <div class="results" id="foodResults"></div></div>`;
+  } else if (st.tab === 'custom') {
+    body = `<form id="customForm" class="sheet-section" novalidate>
+      <label class="lbl" for="cfName">Názov</label>
+      <input class="field" id="cfName" maxlength="120" placeholder="napr. Proteínový puding Jahoda" autocomplete="off">
+      <h3>Hodnoty na 100 g (z obalu)</h3>
+      <div class="grid2">
+        <div><label class="lbl" for="cfKcal">Energia (kcal)</label><input class="field" id="cfKcal" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="cfP">Bielkoviny (g)</label><input class="field" id="cfP" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="cfC">Sacharidy (g)</label><input class="field" id="cfC" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="cfF">Tuky (g)</label><input class="field" id="cfF" inputmode="decimal" autocomplete="off"></div>
+      </div>
+      <p class="hint" id="cfCheck">Na obale je energia aj v kJ. Do poľa patrí hodnota v kcal.</p>
+      <h3>Kus alebo porcia (nepovinné)</h3>
+      <div class="grid2">
+        <div><label class="lbl" for="cfUnit">Názov</label><input class="field" id="cfUnit" maxlength="30" placeholder="napr. kelímok" autocomplete="off"></div>
+        <div><label class="lbl" for="cfUnitG">Hmotnosť (g)</label><input class="field" id="cfUnitG" inputmode="decimal" autocomplete="off"></div>
+      </div>
+      <p class="err" id="cfErr" hidden></p>
+      <div class="btn-row" style="margin-top:18px"><button class="btn primary block" type="submit">Uložiť a zadať množstvo</button></div>
+    </form>`;
+  } else {
+    body = `<form id="quickForm" class="sheet-section" novalidate>
+      <p class="hint" style="margin:0 0 12px">Na jedlo, ktoré nevážiš, napríklad obed v reštaurácii. Zadaj hodnoty za celú porciu.</p>
+      <label class="lbl" for="qName">Popis</label>
+      <input class="field" id="qName" maxlength="120" placeholder="napr. Obed v reštaurácii" autocomplete="off">
+      <div class="grid2" style="margin-top:12px">
+        <div><label class="lbl" for="qKcal">Energia (kcal)</label><input class="field" id="qKcal" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="qP">Bielkoviny (g)</label><input class="field" id="qP" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="qC">Sacharidy (g)</label><input class="field" id="qC" inputmode="decimal" autocomplete="off"></div>
+        <div><label class="lbl" for="qF">Tuky (g)</label><input class="field" id="qF" inputmode="decimal" autocomplete="off"></div>
+      </div>
+      <p class="err" id="qErr" hidden></p>
+      <div class="btn-row" style="margin-top:18px"><button class="btn primary block" type="submit" id="quickSubmit">Pridať: ${MEAL_NAME[st.meal]}</button></div>
+    </form>`;
+  }
+  return `<div class="sheet-head"><h2 id="sheetTitle">Pridať jedlo</h2>${closeBtn}</div>
+    ${mealChips(st.meal)}
+    <div class="tabs" role="tablist" aria-label="Spôsob zápisu">${tab('search', 'Databáza')}${tab('custom', 'Nová potravina')}${tab('quick', 'Rýchly zápis')}</div>
+    ${body}`;
+}
+
+function foodRow(f) {
+  const key = 'k' + UI.pick.size;
+  UI.pick.set(key, f);
+  return `<button type="button" class="food-row" data-act="pick-food" data-key="${key}">
+    <span class="fr-name">${esc(f.name)}${f.custom ? '<span class="badge">moja</span>' : ''}</span>
+    <span class="fr-kcal">${fk(f.kcal)} kcal</span>
+    <span class="fr-meta">na 100 g · B ${fm(f.p)} · S ${fm(f.c)} · T ${fm(f.f)}${f.lastG ? ` · naposledy ${fk(f.lastG)} g` : f.unit ? ` · 1 ${esc(f.unit.name)} = ${fk(f.unit.g)} g` : ''}</span>
+  </button>`;
+}
+
+function renderResults() {
+  const box = $('#foodResults');
+  if (!box) return;
+  const q = norm($('#foodSearch').value.trim());
+  UI.sheet.q = $('#foodSearch').value;
+  UI.pick = new Map();
+  const mine = S.foods.map(f => ({ ...f, custom: true }));
+  if (!q) {
+    const recent = recentFoods(8);
+    let html = '';
+    if (recent.length) html += `<div class="res-group"><h3>Naposledy</h3>${recent.map(foodRow).join('')}</div>`;
+    if (mine.length) html += `<div class="res-group"><h3>Moje potraviny</h3>${mine.map(foodRow).join('')}</div>`;
+    for (const [cat, name] of Object.entries(CATS)) {
+      html += `<div class="res-group"><h3>${name}</h3>${FOODS.filter(f => f.cat === cat).map(foodRow).join('')}</div>`;
+    }
+    box.innerHTML = html;
+    return;
+  }
+  const words = q.split(/\s+/);
+  const scored = [];
+  for (const f of [...mine, ...FOODS]) {
+    const n = norm(f.name);
+    if (!words.every(w => n.includes(w))) continue;
+    const score = (n.startsWith(q) ? 0 : n.split(/[\s(,]+/).some(w => w.startsWith(words[0])) ? 1 : 2) - (f.custom ? 0.5 : 0);
+    scored.push([score, n.length, f]);
+  }
+  scored.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  box.innerHTML = scored.length
+    ? `<div class="res-group">${scored.slice(0, 40).map(s => foodRow(s[2])).join('')}</div>`
+    : `<p class="no-res">„${esc($('#foodSearch').value.trim())}“ v databáze nie je. Pridaj ju cez <button type="button" class="linklike" data-act="tab" data-tab="custom">Nová potravina</button> alebo zapíš hodnoty cez <button type="button" class="linklike" data-act="tab" data-tab="quick">Rýchly zápis</button>.</p>`;
+}
+
+function qtyChips(food, g) {
+  const opts = [];
+  if (food.unit) for (const n of [1, 2, 3]) opts.push([food.unit.g * n, `${n} ${food.unit.name} · ${fk(food.unit.g * n)} g`]);
+  for (const v of [50, 100, 150, 200]) if (!opts.some(o => o[0] === v)) opts.push([v, `${v} g`]);
+  return `<div class="chips" style="margin-top:10px">${opts.map(([v, l]) =>
+    `<button type="button" class="chip" data-act="qty" data-g="${v}" aria-pressed="${v === g}">${esc(l)}</button>`).join('')}</div>`;
+}
+
+function viewAmount(st) {
+  const f = st.food;
+  return `<div class="sheet-head">${st.from ? backBtn : ''}<h2 id="sheetTitle">${esc(f.name)}</h2>${closeBtn}</div>
+    ${mealChips(st.meal)}
+    <form id="amountForm" class="sheet-section" novalidate>
+      <label class="lbl" for="amountG">Množstvo</label>
+      <div class="amount-row"><input class="field" id="amountG" inputmode="decimal" autocomplete="off" value="${esc(fm(st.g))}"><span class="unit">g</span></div>
+      ${qtyChips(f, st.g)}
+      <div class="preview" id="preview" aria-live="polite"></div>
+      <p class="per100">Na 100 g: ${per100Text(f)}</p>
+      <p class="err" id="amountErr" hidden></p>
+      <button class="btn primary block" type="submit" id="amountSubmit">Pridať: ${MEAL_NAME[st.meal]}</button>
+    </form>`;
+}
+
+function viewEdit(st) {
+  const it = dayItems(S.date).find(x => x.id === st.itemId);
+  if (!it) return `<div class="sheet-head"><h2 id="sheetTitle">Položka</h2>${closeBtn}</div><p>Táto položka už neexistuje.</p>`;
+  const body = it.per ? `
+      <label class="lbl" for="amountG">Množstvo</label>
+      <div class="amount-row"><input class="field" id="amountG" inputmode="decimal" autocomplete="off" value="${esc(fm(it.g))}"><span class="unit">g</span></div>
+      ${qtyChips({ unit: it.unit }, it.g)}
+      <div class="preview" id="preview" aria-live="polite"></div>
+      <p class="per100">Na 100 g: ${per100Text(it.per)}</p>` : `
+      <label class="lbl" for="qName">Popis</label>
+      <input class="field" id="qName" maxlength="120" value="${esc(it.name)}" autocomplete="off">
+      <div class="grid2" style="margin-top:12px">
+        <div><label class="lbl" for="qKcal">Energia (kcal)</label><input class="field" id="qKcal" inputmode="decimal" value="${esc(fm(it.kcal))}"></div>
+        <div><label class="lbl" for="qP">Bielkoviny (g)</label><input class="field" id="qP" inputmode="decimal" value="${esc(fm(it.p))}"></div>
+        <div><label class="lbl" for="qC">Sacharidy (g)</label><input class="field" id="qC" inputmode="decimal" value="${esc(fm(it.c))}"></div>
+        <div><label class="lbl" for="qF">Tuky (g)</label><input class="field" id="qF" inputmode="decimal" value="${esc(fm(it.f))}"></div>
+      </div>`;
+  return `<div class="sheet-head"><h2 id="sheetTitle">${esc(it.name)}</h2>${closeBtn}</div>
+    ${mealChips(st.meal)}
+    <form id="editForm" class="sheet-section" novalidate>
+      ${body}
+      <p class="err" id="editErr" hidden></p>
+      <div class="btn-row" style="margin-top:18px">
+        <button class="btn danger" type="button" data-act="delete-item">Odstrániť</button>
+        <button class="btn primary" type="submit">Uložiť zmeny</button>
+      </div>
+    </form>`;
+}
+
+function viewSettings() {
+  const g = S.goals;
+  const [cls, text] = storageText();
+  return `<div class="sheet-head"><h2 id="sheetTitle">Ciele a záloha</h2>${closeBtn}</div>
+    <form id="goalsForm" class="sheet-section" novalidate>
+      <h3 style="margin-top:0">Denný cieľ</h3>
+      <div class="grid2">
+        <div><label class="lbl" for="gKcal">Energia (kcal)</label><input class="field" id="gKcal" inputmode="decimal" value="${esc(fk(g.kcal).replace(/\s/g, ''))}"></div>
+        <div><label class="lbl" for="gP">Bielkoviny (g)</label><input class="field" id="gP" inputmode="decimal" value="${esc(fm(g.p))}"></div>
+        <div><label class="lbl" for="gC">Sacharidy (g)</label><input class="field" id="gC" inputmode="decimal" value="${esc(fm(g.c))}"></div>
+        <div><label class="lbl" for="gF">Tuky (g)</label><input class="field" id="gF" inputmode="decimal" value="${esc(fm(g.f))}"></div>
+      </div>
+      <p class="hint" id="goalCheck"></p>
+      <p class="err" id="goalErr" hidden></p>
+      <div class="btn-row" style="margin-top:14px"><button class="btn primary block" type="submit">Uložiť ciele</button></div>
+    </form>
+    <div class="sheet-section">
+      <h3>Moje potraviny</h3>
+      <div id="myFoods"></div>
+    </div>
+    <div class="sheet-section">
+      <h3>Záloha</h3>
+      <p class="hint" style="margin:0 0 10px">Súbor JSON so všetkými dňami, cieľmi a vlastnými potravinami. Import pridá chýbajúce záznamy k existujúcim.</p>
+      <div class="btn-row">
+        <button class="btn" type="button" data-act="export">Exportovať zálohu</button>
+        <label class="btn file-label">Importovať zo súboru<input type="file" id="importFile" accept="application/json,.json"></label>
+      </div>
+      <div id="exportBox" hidden style="margin-top:12px">
+        <label class="lbl" for="exportText">Skopíruj text zálohy a ulož si ho do súboru</label>
+        <textarea class="field" id="exportText" readonly></textarea>
+        <button class="btn small" type="button" data-act="copy-export" style="margin-top:8px">Kopírovať</button>
+      </div>
+      <p class="hint"><i class="dot ${cls}"></i>${esc(text)}</p>
+    </div>`;
+}
+
+function renderMyFoods() {
+  const box = $('#myFoods');
+  if (!box) return;
+  box.innerHTML = S.foods.length
+    ? `<ul class="my-foods">${S.foods.map(f => `<li><span class="mf-name">${esc(f.name)}<span class="mf-meta">na 100 g: ${per100Text(f)}${f.unit ? ` · 1 ${esc(f.unit.name)} = ${fk(f.unit.g)} g` : ''}</span></span>
+        <button type="button" class="btn small ghost danger" data-act="del-food" data-fid="${esc(f.id)}" aria-label="Odstrániť ${esc(f.name)}">Odstrániť</button></li>`).join('')}</ul>`
+    : `<p class="hint" style="margin:0">Zatiaľ žiadne. Vlastnú potravinu pridáš cez Pridať jedlo, záložka Nová potravina.</p>`;
+}
+
+function readG() { const el = $('#amountG'); return el ? num(el.value) : NaN; }
+
+function updatePreview() {
+  const st = UI.sheet, box = $('#preview');
+  if (!box || !st) return;
+  const per = st.view === 'amount' ? st.food : (dayItems(S.date).find(x => x.id === st.itemId) || {}).per;
+  if (!per) return;
+  const g = readG();
+  const v = g > 0 ? fromPer(per, g) : { kcal: 0, p: 0, c: 0, f: 0 };
+  box.innerHTML = `<div class="pv-kcal">${fk(v.kcal)}<small>kcal</small></div>
+    <div class="pv-macros"><span><i class="sw sw-p"></i>B ${fm(v.p)} g</span><span><i class="sw sw-c"></i>S ${fm(v.c)} g</span><span><i class="sw sw-f"></i>T ${fm(v.f)} g</span></div>`;
+  document.querySelectorAll('#sheet [data-act="qty"]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.g === g)));
+}
+
+function updateCustomCheck() {
+  const el = $('#cfCheck');
+  if (!el) return;
+  const k = num($('#cfKcal').value), p = num($('#cfP').value) || 0, c = num($('#cfC').value) || 0, f = num($('#cfF').value) || 0;
+  const mk = macroKcal(p, c, f);
+  if (k > 0 && mk > 0 && Math.abs(mk - k) > Math.max(25, k * 0.15)) {
+    el.className = 'hint warn';
+    el.textContent = `Skontroluj hodnoty: makrá zodpovedajú približne ${fk(mk)} kcal na 100 g.`;
+  } else {
+    el.className = 'hint';
+    el.textContent = 'Na obale je energia aj v kJ. Do poľa patrí hodnota v kcal.';
+  }
+}
+
+function updateGoalCheck() {
+  const el = $('#goalCheck');
+  if (!el) return;
+  const k = num($('#gKcal').value), mk = macroKcal(num($('#gP').value) || 0, num($('#gC').value) || 0, num($('#gF').value) || 0);
+  const off = k > 0 && Math.abs(mk - k) > k * 0.05;
+  el.className = off ? 'hint warn' : 'hint';
+  el.textContent = `Makrá spolu dávajú ${fk(mk)} kcal${off ? `, cieľ energie je ${fk(k)} kcal.` : '.'}`;
+}
+
+function showErr(id, msg) { const el = $(id); if (el) { el.textContent = msg; el.hidden = !msg; } }
+
+/* ---------- Toast ---------- */
+
+let toastTimer = 0;
+function toast(msg, action) {
+  const el = $('#toast'), btn = $('#toastAct');
+  $('#toastMsg').textContent = msg;
+  btn.hidden = !action;
+  btn.onclick = null;
+  if (action) {
+    btn.textContent = action.label;
+    btn.onclick = () => { el.hidden = true; action.fn(); };
+  }
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, action ? 6000 : 4000);
+}
+
+/* ---------- Akcie ---------- */
+
+function setDate(key) {
+  if (!isDayKey(key)) return;
+  S.date = key;
+  render();
+}
+
+function openAdd(meal) { openSheet({ view: 'add', meal: meal || defaultMeal(), tab: 'search', q: '' }); }
+
+function openAmount(food, g, from) {
+  const meal = UI.sheet && UI.sheet.meal ? UI.sheet.meal : defaultMeal();
+  const grams = g || food.lastG || (food.unit ? food.unit.g : 100);
+  openSheet({ view: 'amount', meal, food, g: grams, from: from || null });
+}
+
+function confirmAdd() {
+  const st = UI.sheet, g = readG();
+  if (!(g > 0) || g > 10000) { showErr('#amountErr', 'Zadaj množstvo v gramoch, napríklad 120.'); return; }
+  const item = itemFromFood(st.food, r1(g), st.meal);
+  const key = S.date;
+  addItem(key, item);
+  closeSheet();
+  render();
+  toast(`${MEAL_NAME[item.meal]}: ${item.name}, ${fk(item.g)} g`, { label: 'Späť', fn: () => { removeItems(key, [item.id]); render(); } });
+}
+
+function saveEdit() {
+  const st = UI.sheet;
+  const day = S.days[S.date];
+  const it = day && day.items.find(x => x.id === st.itemId);
+  if (!it) { closeSheet(); return; }
+  if (it.per) {
+    const g = readG();
+    if (!(g > 0) || g > 10000) { showErr('#editErr', 'Zadaj množstvo v gramoch, napríklad 120.'); return; }
+    Object.assign(it, { g: r1(g) }, fromPer(it.per, r1(g)));
+  } else {
+    const k = num($('#qKcal').value);
+    if (!(k >= 0)) { showErr('#editErr', 'Zadaj energiu v kcal.'); return; }
+    Object.assign(it, {
+      name: $('#qName').value.trim() || 'Rýchly zápis', kcal: r1(k),
+      p: r1(Math.max(0, num($('#qP').value) || 0)), c: r1(Math.max(0, num($('#qC').value) || 0)), f: r1(Math.max(0, num($('#qF').value) || 0)),
+    });
+  }
+  it.meal = st.meal;
+  saveDay(S.date);
+  closeSheet();
+  render();
+  toast('Zmeny sú uložené.');
+}
+
+function deleteItem() {
+  const key = S.date, id = UI.sheet.itemId;
+  const [removed] = removeItems(key, [id]);
+  closeSheet();
+  render();
+  if (removed) toast(`Odstránené: ${removed.name}`, { label: 'Späť', fn: () => { addItem(key, removed); render(); } });
+}
+
+function copyYesterday(meal) {
+  const key = S.date;
+  const src = dayItems(addDays(key, -1)).filter(it => it.meal === meal);
+  if (!src.length) return;
+  const now = Date.now();
+  const copies = src.map((it, i) => ({ ...clone(it), id: uid(), t: now + i }));
+  const day = S.days[key] || (S.days[key] = { items: [] });
+  day.items.push(...copies);
+  saveDay(key);
+  render();
+  const n = copies.length;
+  toast(`${MEAL_NAME[meal]}: skopírované ${n} ${n === 1 ? 'položka' : n < 5 ? 'položky' : 'položiek'}`, {
+    label: 'Späť', fn: () => { removeItems(key, copies.map(c => c.id)); render(); },
+  });
+}
+
+function submitCustom() {
+  const name = $('#cfName').value.trim();
+  const kcal = num($('#cfKcal').value);
+  const vals = ['#cfP', '#cfC', '#cfF'].map(id => { const v = $(id).value.trim(); return v === '' ? 0 : num(v); });
+  if (!name) return showErr('#cfErr', 'Doplň názov potraviny.');
+  if (!(kcal >= 0) || kcal > 950) return showErr('#cfErr', 'Zadaj energiu na 100 g v kcal (0 až 950).');
+  if (vals.some(v => !(v >= 0) || v > 100)) return showErr('#cfErr', 'Bielkoviny, sacharidy a tuky zadaj v gramoch na 100 g (0 až 100).');
+  const unitName = $('#cfUnit').value.trim(), unitG = num($('#cfUnitG').value);
+  if (unitName && !(unitG > 0)) return showErr('#cfErr', 'K porcii doplň aj jej hmotnosť v gramoch.');
+  const food = { id: 'c_' + uid(), name, kcal: r1(kcal), p: r1(vals[0]), c: r1(vals[1]), f: r1(vals[2]), unit: unitName ? { name: unitName.slice(0, 30), g: r1(unitG) } : null, custom: true };
+  S.foods.unshift(food);
+  saveFoods();
+  openAmount(food, null, 'custom');
+}
+
+function submitQuick() {
+  const kcal = num($('#qKcal').value);
+  if (!(kcal >= 0) || kcal > 10000) return showErr('#qErr', 'Zadaj energiu porcie v kcal.');
+  const m = id => Math.max(0, num($(id).value) || 0);
+  const st = UI.sheet;
+  const item = { id: uid(), meal: st.meal, name: $('#qName').value.trim() || 'Rýchly zápis', g: null,
+    kcal: r1(kcal), p: r1(m('#qP')), c: r1(m('#qC')), f: r1(m('#qF')), per: null, fid: null, unit: null, t: Date.now() };
+  const key = S.date;
+  addItem(key, item);
+  closeSheet();
+  render();
+  toast(`${MEAL_NAME[item.meal]}: ${item.name}, ${fk(item.kcal)} kcal`, { label: 'Späť', fn: () => { removeItems(key, [item.id]); render(); } });
+}
+
+function submitGoals() {
+  const k = num($('#gKcal').value), p = num($('#gP').value), c = num($('#gC').value), f = num($('#gF').value);
+  if (!(k >= 800 && k <= 10000)) return showErr('#goalErr', 'Cieľ energie zadaj v rozsahu 800 až 10 000 kcal.');
+  if (![p, c, f].every(v => v > 0 && v <= 1500)) return showErr('#goalErr', 'Ciele makier zadaj v gramoch, každý väčší ako 0.');
+  S.goals = { kcal: Math.round(k), p: r1(p), c: r1(c), f: r1(f) };
+  saveGoals();
+  closeSheet();
+  render();
+  toast('Ciele sú uložené.');
+}
+
+function deleteFood(fid) {
+  const i = S.foods.findIndex(f => f.id === fid);
+  if (i < 0) return;
+  const [food] = S.foods.splice(i, 1);
+  saveFoods();
+  renderMyFoods();
+  toast(`Odstránené z mojich potravín: ${food.name}`, { label: 'Späť', fn: () => { S.foods.splice(i, 0, food); saveFoods(); renderMyFoods(); } });
+}
+
+function exportJson() {
+  return JSON.stringify({ app: 'dennik-potravin', version: 1, exported: new Date().toISOString(), goals: S.goals,
+    foods: S.foods.map(({ custom, ...f }) => f), days: S.days }, null, 2);
+}
+
+async function doExport() {
+  const data = exportJson();
+  const filename = `dennik-potravin-${todayKey()}.json`;
+  if (window.claude && typeof window.claude.use === 'function') {
+    const dl = await window.claude.use('downloads').catch(() => null);
+    if (dl) {
+      try { await dl.save({ filename, data }); toast('Záloha je pripravená.'); return; }
+      catch (e) { if (e && (e.code === 'declined' || e.code === 'rate_limited')) return; }
+    }
+    showExportBox(data);
+    return;
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) { showExportBox(data); }
+}
+
+function showExportBox(data) {
+  const box = $('#exportBox');
+  if (!box) return;
+  box.hidden = false;
+  $('#exportText').value = data;
+}
+
+async function doImport(file) {
+  let d;
+  try { d = JSON.parse(await file.text()); } catch (e) { toast('Súbor sa nedá prečítať. Vyber zálohu vo formáte JSON z tejto aplikácie.'); return; }
+  if (!d || typeof d !== 'object' || !d.days || typeof d.days !== 'object') { toast('V súbore nie sú záznamy z Denníka potravín.'); return; }
+  const changed = [];
+  let added = 0;
+  for (const [k, v] of Object.entries(d.days)) {
+    if (!isDayKey(k) || !v || !Array.isArray(v.items)) continue;
+    const day = S.days[k] || { items: [] };
+    const ids = new Set(day.items.map(it => it.id));
+    const fresh = v.items.map(cleanItem).filter(it => it && !ids.has(it.id));
+    if (!fresh.length) continue;
+    day.items.push(...fresh);
+    S.days[k] = day;
+    added += fresh.length;
+    changed.push(k);
+  }
+  let foodsChanged = false;
+  if (Array.isArray(d.foods)) {
+    const have = new Set(S.foods.map(f => f.id));
+    for (const f of d.foods.map(cleanFood).filter(Boolean)) if (!have.has(f.id)) { S.foods.push(f); foodsChanged = true; }
+  }
+  if (d.goals) S.goals = normalizeGoals(d.goals);
+  render();
+  toast(`Importujem ${added} položiek…`);
+  if (S.mode === 'cloud') {
+    if (d.goals) await saveGoals();
+    if (foodsChanged) await saveFoods();
+    for (const k of changed) await saveDay(k);
+  } else saveLocal();
+  render();
+  toast(`Import hotový: ${added} položiek v ${changed.length} dňoch.`);
+}
+
+/* ---------- Udalosti ---------- */
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!t || t.disabled) return;
+  const act = t.dataset.act;
+  switch (act) {
+    case 'prev-day': setDate(addDays(S.date, -1)); break;
+    case 'next-day': setDate(addDays(S.date, 1)); break;
+    case 'go-today': setDate(todayKey()); break;
+    case 'go-day': setDate(t.dataset.date); break;
+    case 'add': if (S.mode !== 'loading') openAdd(t.dataset.meal); break;
+    case 'suggest': { const f = FOOD_BY_ID.get(t.dataset.fid); if (f) openAmount(f, +t.dataset.g); break; }
+    case 'copy-yday': copyYesterday(t.dataset.meal); break;
+    case 'edit-item': {
+      const it = dayItems(S.date).find(x => x.id === t.dataset.id);
+      if (it) openSheet({ view: 'edit', itemId: it.id, meal: it.meal });
+      break;
+    }
+    case 'open-settings': openSheet({ view: 'settings' }); break;
+    case 'close-sheet': closeSheet(); break;
+    case 'set-meal': {
+      UI.sheet.meal = t.dataset.meal;
+      document.querySelectorAll('#sheet [data-act="set-meal"]').forEach(b => b.setAttribute('aria-checked', String(b === t)));
+      const label = `Pridať: ${MEAL_NAME[UI.sheet.meal]}`;
+      for (const id of ['#amountSubmit', '#quickSubmit']) { const b = $(id); if (b) b.textContent = label; }
+      break;
+    }
+    case 'tab': UI.sheet.tab = t.dataset.tab; renderSheet(true); break;
+    case 'pick-food': { const f = UI.pick.get(t.dataset.key); if (f) openAmount(f, null, 'add'); break; }
+    case 'back': {
+      openSheet({ view: 'add', meal: UI.sheet.meal, tab: 'search', q: '' });
+      break;
+    }
+    case 'qty': { const el = $('#amountG'); if (el) { el.value = fm(+t.dataset.g); updatePreview(); } break; }
+    case 'delete-item': deleteItem(); break;
+    case 'del-food': deleteFood(t.dataset.fid); break;
+    case 'export': doExport(); break;
+    case 'copy-export': {
+      const ta = $('#exportText');
+      const fallback = () => { ta.focus(); ta.select(); toast('Text je označený. Skopíruj ho.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => toast('Záloha je skopírovaná.'), fallback);
+      else fallback();
+      break;
+    }
+  }
+});
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = e.target.id;
+  if (id === 'amountForm') confirmAdd();
+  else if (id === 'editForm') saveEdit();
+  else if (id === 'customForm') submitCustom();
+  else if (id === 'quickForm') submitQuick();
+  else if (id === 'goalsForm') submitGoals();
+});
+
+document.addEventListener('input', e => {
+  const id = e.target.id;
+  if (id === 'foodSearch') renderResults();
+  else if (id === 'amountG') { updatePreview(); showErr('#amountErr', ''); showErr('#editErr', ''); }
+  else if (/^cf/.test(id)) { updateCustomCheck(); showErr('#cfErr', ''); }
+  else if (/^g(Kcal|P|C|F)$/.test(id)) { updateGoalCheck(); showErr('#goalErr', ''); }
+  else if (/^q/.test(id)) { showErr('#qErr', ''); showErr('#editErr', ''); }
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'datePick' && e.target.value) setDate(e.target.value);
+  if (e.target.id === 'importFile' && e.target.files && e.target.files[0]) { doImport(e.target.files[0]); e.target.value = ''; }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && UI.sheet) { e.preventDefault(); closeSheet(); }
+  if (e.key === 'Enter' && e.target.id === 'foodSearch') {
+    e.preventDefault();
+    const first = document.querySelector('#foodResults [data-act="pick-food"]');
+    if (first && $('#foodSearch').value.trim()) first.click();
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  const now = todayKey();
+  if (now !== UI.today) { if (S.date === UI.today) S.date = now; UI.today = now; render(); }
+});
+
+/* ---------- Štart ---------- */
+
+async function boot() {
+  document.documentElement.lang = 'sk';
+  render();
+  const c = window.claude;
+  if (c && typeof c.use === 'function') {
+    try {
+      const [db, user] = await Promise.all([c.use('db'), c.use('user')]);
+      const id = user ? await user.id() : null;
+      if (db && id) { startCloud(db, id); return; }
+    } catch (e) { /* bez cloudu pokračujeme lokálne */ }
+  }
+  startLocal();
+}
+boot();
+})();
+</script>
+</body>
+</html>
