@@ -21,6 +21,7 @@
   --protein: #C8102E;
   --carbs: #1D4FA6;
   --fat: #D49A00;
+  --water: #0B86AE;
   --ok: #1D7A49;
   --warn: #B5420B;
   --focus: #1D4FA6;
@@ -42,7 +43,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0E1013; --surface: #171A1F; --surface-2: #1E2228; --ink: #E8EBEF; --on-ink: #0E1013;
-    --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C;
+    --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C; --water: #3CB9E2;
     --ok: #44C285; --warn: #F28A4A; --focus: #5B97F5; --scrim: rgba(0, 0, 0, .6);
     --shadow: 0 12px 40px rgba(0, 0, 0, .5); --board: #1C2026; --board-line: #2F353E; --board-track: #2C323B;
     color-scheme: dark;
@@ -50,7 +51,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #0E1013; --surface: #171A1F; --surface-2: #1E2228; --ink: #E8EBEF; --on-ink: #0E1013;
-  --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C;
+  --muted: #97A0AC; --line: #2A2F37; --protein: #F2475E; --carbs: #5B97F5; --fat: #F4BC2C; --water: #3CB9E2;
   --ok: #44C285; --warn: #F28A4A; --focus: #5B97F5; --scrim: rgba(0, 0, 0, .6);
   --shadow: 0 12px 40px rgba(0, 0, 0, .5); --board: #1C2026; --board-line: #2F353E; --board-track: #2C323B;
   color-scheme: dark;
@@ -87,6 +88,7 @@ button { font: inherit; color: inherit; }
 .btn.block { width: 100%; min-height: 48px; }
 .btn.small { min-height: 34px; padding: 0 12px; font-size: .9rem; }
 .icon-btn { width: 40px; padding: 0; }
+.btn.small.icon-btn { width: 34px; }
 .btn svg { width: 18px; height: 18px; flex: none; }
 .linklike { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
@@ -105,29 +107,40 @@ button { font: inherit; color: inherit; }
 .layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 880px) {
   .layout { grid-template-columns: minmax(0, 370px) minmax(0, 1fr); align-items: start; }
-  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
 }
 .rail { display: grid; gap: 20px; min-width: 0; }
+.main-col { min-width: 0; }
+/* Na mobile ide denník hneď pod súhrn, voda a týždeň až za ním. */
+@media (max-width: 879px) {
+  .rail { display: contents; }
+  #summary { order: 1; } .main-col { order: 2; } #water { order: 3; } #week { order: 4; }
+}
 
 /* Scoreboard */
 .board { background: var(--board); color: var(--board-ink); border: 1px solid var(--board-line); border-radius: 14px; padding: 20px; }
 .eyebrow { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
 .board .eyebrow { color: var(--board-muted); }
-.kcal-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.board-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.streak { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; color: var(--board-ink);
+  border: 1px solid var(--board-line); border-radius: 999px; padding: 2px 10px 2px 8px; font-variant-numeric: tabular-nums; }
+.streak svg { width: 14px; height: 14px; fill: var(--b-warn); }
+.kcal-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
 .kcal-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(3.4rem, 15vw, 4.6rem); line-height: .82;
   font-variant-numeric: tabular-nums; letter-spacing: .01em; }
 .kcal-big small { font-size: .32em; font-weight: 700; letter-spacing: .06em; margin-left: .25em; color: var(--board-muted); }
-.kcal-goal { text-align: right; color: var(--board-muted); font-size: .85rem; line-height: 1.3; }
-.kcal-goal b { display: block; color: var(--board-ink); font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
-  font-variant-numeric: tabular-nums; }
+.kj { color: var(--board-muted); font-size: .85rem; font-variant-numeric: tabular-nums; margin-bottom: 2px; }
 .kbar { position: relative; height: 14px; border-radius: 3px; background: var(--board-track); margin-top: 16px; overflow: hidden; }
 .kbar-fill { position: absolute; inset: 0 auto 0 0; background: var(--b-ok); transition: width .35s ease; }
 .kbar-over { position: absolute; top: 0; bottom: 0; background: var(--b-warn); }
 .kbar .tick { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--board); opacity: .7; }
 .kbar .goal-mark { position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1.5px; background: var(--board-ink); }
-.kcal-left { margin: 10px 0 0; font-weight: 500; }
-.kcal-left .over { color: var(--b-warn); }
-.kcal-left .scale-note { color: var(--board-muted); font-weight: 400; font-size: .8rem; }
+.formula { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+.formula div { display: grid; min-width: 0; text-align: center; }
+.formula b { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; line-height: 1; }
+.formula span { font-size: .7rem; color: var(--board-muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+.formula i { font-style: normal; color: var(--board-muted); font-size: 1.1rem; padding-bottom: 16px; }
+.formula .rem b { color: var(--b-ok); font-size: 1.75rem; }
+.formula .rem.over b { color: var(--b-warn); }
 .macros { display: grid; gap: 14px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--board-line); }
 .macro-top { display: flex; align-items: baseline; gap: 8px; }
 .macro-name { flex: 1; min-width: 0; }
@@ -147,9 +160,22 @@ button { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums; }
 .split-legend span { display: inline-flex; align-items: center; gap: 6px; }
 
-/* Week */
+/* Panels: water, week */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
 .panel h2 { margin: 0; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.water-val { font-variant-numeric: tabular-nums; color: var(--muted); }
+.water-val b { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--ink); }
+.glasses { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 4px; margin-top: 12px; }
+.glass { background: none; border: 0; padding: 4px 0; cursor: pointer; border-radius: 6px; display: grid; place-items: center; }
+.glass:hover { background: var(--surface-2); }
+.glass svg { width: 22px; height: 28px; }
+.glass .g-out { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; }
+.glass .g-fill { fill: var(--water); opacity: 0; transition: opacity .2s; }
+.glass.on .g-out { stroke: var(--water); }
+.glass.on .g-fill { opacity: 1; }
+.water-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
 .wc { margin-top: 14px; }
 .wc-plot { position: relative; height: 128px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 2px solid var(--ink); }
 .wc-col { position: relative; height: 100%; background: none; border: 0; padding: 0; cursor: pointer; border-radius: 4px 4px 0 0; }
@@ -175,14 +201,17 @@ button { font: inherit; color: inherit; }
 .ledger { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
 .empty-day { padding: 18px 16px 16px; border-bottom: 1px solid var(--line); }
 .empty-day p { margin: 0 0 10px; max-width: 58ch; }
+.empty-day .btn { margin-bottom: 12px; }
 .meal { padding: 16px 16px 14px; }
 .meal + .meal { border-top: 1px solid var(--line); }
+.meal.acts { border-top: 3px solid var(--ink); }
 .meal-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .meal-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1; letter-spacing: .04em;
   text-transform: uppercase; margin: 0; }
 .meal-sum { display: flex; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; }
 .meal-sum .kc { font-weight: 600; }
 .meal-sum .mm { color: var(--muted); font-size: .82rem; }
+.burn { color: var(--ok); }
 .items { list-style: none; margin: 10px 0 0; padding: 0; }
 .item-btn { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 14px; width: 100%; text-align: left;
   background: none; border: 0; border-top: 1px dashed var(--line); padding: 9px 4px; cursor: pointer; border-radius: 0; }
@@ -197,11 +226,13 @@ button { font: inherit; color: inherit; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; margin-right: 6px; }
 .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); }
 
-/* FAB */
-.desk-add { display: none; }
-@media (min-width: 880px) { .desk-add { display: inline-flex; } .fab { display: none; } }
-.fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  min-height: 54px; padding: 0 22px; border-radius: 999px; box-shadow: var(--shadow); font-size: 1rem; }
+/* Floating buttons */
+.desk-only { display: none; }
+.fabs { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; gap: 10px; align-items: center; }
+.fab { min-height: 54px; padding: 0 22px; border-radius: 999px; box-shadow: var(--shadow); font-size: 1rem; }
+.fab-mic { width: 54px; height: 54px; padding: 0; border-radius: 50%; box-shadow: var(--shadow); }
+.fab-mic svg { width: 24px; height: 24px; }
+@media (min-width: 880px) { .desk-only { display: inline-flex; } .fabs { display: none; } }
 
 /* Sheet */
 .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
@@ -235,11 +266,17 @@ button { font: inherit; color: inherit; }
 .field { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
   border-radius: 8px; padding: 10px 12px; width: 100%; min-height: 46px; }
 .field:focus { border-color: var(--focus); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent); }
+select.field { padding-right: 8px; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .hint { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
 .hint.warn { color: var(--warn); }
 .err { color: var(--warn); font-size: .88rem; font-weight: 500; margin: 8px 0 0; }
+.check { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--ink); flex: none; }
 
+.search-wrap { position: relative; }
+.search-wrap .field { padding-right: 52px; }
+.search-wrap .btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
 .results { margin-top: 6px; }
 .res-group h3 { margin-top: 18px; }
 .food-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 12px; width: 100%; text-align: left; background: none;
@@ -265,11 +302,53 @@ button { font: inherit; color: inherit; }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn-row .btn { flex: 1 1 160px; }
 
+/* Voice */
+.voice { display: grid; justify-items: center; gap: 10px; padding-block: 8px 16px; text-align: center; }
+.mic { width: 84px; height: 84px; border-radius: 50%; border: 0; background: var(--ink); color: var(--on-ink); cursor: pointer;
+  display: grid; place-items: center; position: relative; }
+.mic svg { width: 34px; height: 34px; }
+.mic.live { background: var(--protein); color: #FFFFFF; }
+.mic.live::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid var(--protein); animation: ring 1.2s ease-out infinite; }
+@keyframes ring { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.25); opacity: 0; } }
+.mic-status { margin: 0; color: var(--muted); max-width: 40ch; }
+.mic-status b { color: var(--ink); }
+.kbd-mic { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1px solid var(--line);
+  border-radius: 5px; vertical-align: -5px; background: var(--surface-2); }
+.kbd-mic svg { width: 13px; height: 13px; }
+textarea.voice-text { min-height: 96px; resize: vertical; line-height: 1.45; }
+.examples { display: grid; gap: 6px; margin-top: 10px; }
+.example { text-align: left; background: var(--surface-2); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px;
+  cursor: pointer; font-size: .88rem; color: var(--muted); }
+.example:hover { color: var(--ink); border-color: var(--muted); }
+.vr-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.vr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.vr input[type=checkbox] { width: 20px; height: 20px; margin: 12px 0 0; accent-color: var(--ink); }
+.vr.off .vr-body { opacity: .45; }
+.vr-body { display: grid; gap: 6px; min-width: 0; }
+.vr-name { font-weight: 600; overflow-wrap: anywhere; padding-top: 10px; }
+.vr-sub { color: var(--muted); font-size: .8rem; }
+.vr-sub .est { color: var(--warn); }
+.vr-ctrl { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.vr-ctrl .field { min-height: 40px; padding: 6px 10px; }
+.vr-g-wrap { position: relative; }
+.vr-g-wrap .field { padding-right: 26px; font-variant-numeric: tabular-nums; }
+.vr-g-wrap span { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .85rem; pointer-events: none; }
+.vr-kcal { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.unmatched { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); }
+.unmatched p { margin: 0 0 6px; font-size: .88rem; }
+.unmatched ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.unmatched li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.voice-total { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 14px 0 10px; font-variant-numeric: tabular-nums; }
+.voice-total b { font-family: var(--font-display); font-size: 1.6rem; }
+.busy { display: inline-flex; align-items: center; gap: 8px; }
+.busy::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--ink); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .my-foods { list-style: none; padding: 0; margin: 0; }
 .my-foods li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .my-foods .mf-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .my-foods .mf-meta { display: block; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
-textarea.field { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+textarea.field.mono { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
 .file-label { position: relative; overflow: hidden; }
 .file-label input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
@@ -288,6 +367,14 @@ textarea.field { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, 
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 1.5-5 3-6 0 2 1 3 2 3-1-3 0-6 1-9z"/></symbol>
+</svg>
 <div class="app">
   <header class="top">
     <div class="brand">
@@ -306,35 +393,33 @@ textarea.field { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, 
       <p id="daySub"></p>
     </div>
     <div class="daynav">
-      <button class="btn icon-btn" type="button" data-act="prev-day" aria-label="Predchádzajúci deň">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-      </button>
+      <button class="btn icon-btn" type="button" data-act="prev-day" aria-label="Predchádzajúci deň"><svg aria-hidden="true"><use href="#i-left"/></svg></button>
       <label class="sr" for="datePick">Dátum</label>
       <input class="date-input" type="date" id="datePick">
-      <button class="btn icon-btn" type="button" data-act="next-day" aria-label="Nasledujúci deň">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-      </button>
+      <button class="btn icon-btn" type="button" data-act="next-day" aria-label="Nasledujúci deň"><svg aria-hidden="true"><use href="#i-right"/></svg></button>
       <button class="btn" type="button" id="todayBtn" data-act="go-today">Dnes</button>
-      <button class="btn primary desk-add" type="button" id="deskAdd" data-act="add">+ Pridať jedlo</button>
+      <button class="btn desk-only" type="button" data-act="voice" data-needs-store><svg aria-hidden="true"><use href="#i-mic"/></svg>Hlasom</button>
+      <button class="btn primary desk-only" type="button" data-act="add" data-needs-store><svg aria-hidden="true"><use href="#i-plus"/></svg>Pridať jedlo</button>
     </div>
   </section>
 
   <main class="layout">
     <div class="rail">
       <section class="board" id="summary" aria-label="Súhrn dňa"></section>
+      <section class="panel" id="water" aria-labelledby="waterTitle"></section>
       <section class="panel" id="week" aria-labelledby="weekTitle"></section>
     </div>
-    <div>
+    <div class="main-col">
       <section class="ledger" id="ledger" aria-label="Jedlá dňa"></section>
       <footer class="foot" id="foot"></footer>
     </div>
   </main>
 </div>
 
-<button class="btn primary fab" type="button" id="fab" data-act="add">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-  Pridať jedlo
-</button>
+<div class="fabs">
+  <button class="btn fab-mic" type="button" data-act="voice" data-needs-store aria-label="Hlasový zápis"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
+  <button class="btn primary fab" type="button" data-act="add" data-needs-store><svg aria-hidden="true"><use href="#i-plus"/></svg>Pridať jedlo</button>
+</div>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
   <div class="scrim" data-act="close-sheet"></div>
@@ -358,6 +443,7 @@ const MEALS = [
   { id: 'obed', name: 'Obed' },
   { id: 'olovrant', name: 'Olovrant' },
   { id: 'vecera', name: 'Večera' },
+  { id: 'vecera2', name: 'Druhá večera' },
 ];
 const MEAL_NAME = Object.fromEntries(MEALS.map(m => [m.id, m.name]));
 
@@ -385,6 +471,7 @@ const FOOD_DATA = [
   ['brav-panenka', 'Bravčová panenka (surová)', 'maso', 120, 21, 0, 3.5],
   ['brav-kare', 'Bravčové karé (surové)', 'maso', 143, 21.4, 0, 5.7],
   ['sunka', 'Šunka výberová', 'maso', 110, 19, 1, 3.2, 'plátok', 15],
+  ['parky', 'Párky', 'maso', 250, 12, 2, 22, 'pár', 100],
   ['losos', 'Losos (surový)', 'maso', 208, 20, 0, 13],
   ['tuniak', 'Tuniak vo vlastnej šťave (scedený)', 'maso', 116, 25.5, 0, 0.8, 'konzerva', 112],
   ['treska', 'Treska (surová)', 'maso', 82, 18, 0, 0.7],
@@ -397,6 +484,7 @@ const FOOD_DATA = [
   ['gr-jog0', 'Grécky jogurt 0 %', 'mliecne', 59, 10.3, 3.6, 0.4, 'kelímok', 150],
   ['gr-jog10', 'Jogurt grécky typ 10 %', 'mliecne', 126, 3.6, 4.6, 10, 'kelímok', 150],
   ['jog-biely', 'Biely jogurt 3 %', 'mliecne', 63, 3.8, 5, 3, 'kelímok', 150],
+  ['jog-ovocny', 'Ovocný jogurt', 'mliecne', 95, 3.5, 14, 2.7, 'kelímok', 150],
   ['skyr', 'Skyr bez príchute', 'mliecne', 63, 11, 4, 0.2, 'kelímok', 140],
   ['tvaroh-ntuc', 'Tvaroh nízkotučný', 'mliecne', 75, 13, 4, 0.5, 'balenie', 250],
   ['tvaroh-ptuc', 'Tvaroh polotučný', 'mliecne', 116, 11.3, 3.5, 6, 'balenie', 250],
@@ -465,6 +553,8 @@ const FOOD_DATA = [
   ['whey-iso', 'Srvátkový izolát WPI 90', 'doplnky', 370, 88, 3, 1, 'odmerka', 30],
   ['prot-tycinka', 'Proteínová tyčinka (priemer)', 'doplnky', 370, 32, 35, 12, 'ks', 55],
 
+  ['kava', 'Káva čierna', 'napoje', 2, 0.1, 0.3, 0, 'šálka', 100],
+  ['cappuccino', 'Cappuccino', 'napoje', 38, 2.1, 3.1, 1.9, 'šálka', 180],
   ['dzus', 'Pomarančový džús 100 %', 'napoje', 45, 0.7, 10.4, 0.2, 'pohár', 250],
   ['kola', 'Kola sladená', 'napoje', 42, 0, 10.6, 0, 'plechovka', 330],
   ['pivo', 'Pivo svetlé 10°', 'napoje', 36, 0.4, 3.3, 0, 'pollitra', 500],
@@ -481,9 +571,57 @@ const FOODS = FOOD_DATA.map(([id, name, cat, kcal, p, c, f, un, ug]) =>
   ({ id, name, cat, kcal, p, c, f, unit: un ? { name: un, g: ug } : null }));
 const FOOD_BY_ID = new Map(FOODS.map(f => [f.id, f]));
 
+// Ďalšie tvary slov, ktoré ľudia hovoria (bez diakritiky).
+const ALIASES = {
+  'vajce': ['vajicko', 'vajec', 'vajco'],
+  'bielok': ['bielky', 'bielkov'],
+  'kur-prsia-gril': ['kura', 'kuracie maso', 'kuraci rezen'],
+  'chlieb': ['chlieb', 'chleb', 'chlebik', 'krajec'],
+  'chlieb-cel': ['celozrnny chleb'],
+  'rozok': ['rozky', 'rozkov'],
+  'whey': ['protein', 'proteinak', 'srvatka'],
+  'prot-tycinka': ['tycinka'],
+  'eidam45': ['syr', 'eidam'],
+  'mlieko15': ['mlieko'],
+  'zemiaky-var': ['zemiaky', 'zemiak'],
+  'jog-biely': ['jogurt'],
+  'gr-jog0': ['grecky jogurt'],
+  'pivo': ['pivko', 'pivecko'],
+  'kola': ['cola', 'coca cola', 'pepsi'],
+  'hov-mlete': ['mlete maso'],
+  'tuniak': ['tuna'],
+  'kava': ['kava', 'kavicka', 'espresso'],
+  'salat': ['salat'],
+  'olej': ['olej'],
+  'parky': ['parok'],
+  'cestoviny-var': ['spagety', 'makarony', 'testoviny'],
+  'sampinony': ['huby', 'hriby'],
+};
+// Pri hlasovom zápise dávame prednosť hotovému jedlu (napr. varená ryža) pred surovinou.
+const VOICE_PREF = new Set(['ryza-var', 'cestoviny-var', 'zemiaky-var', 'kur-prsia-gril', 'mlieko15', 'chlieb', 'eidam45']);
+
+const ACTIVITIES = [
+  ['posilnovna', 'Posilňovňa (silový tréning)', 5],
+  ['kruhovy', 'Kruhový tréning, HIIT', 8],
+  ['beh', 'Beh (cca 10 km/h)', 9.8],
+  ['chodza', 'Chôdza (5 km/h)', 3.5],
+  ['bicykel', 'Bicykel (stredné tempo)', 6.8],
+  ['plavanie', 'Plávanie', 6],
+  ['turistika', 'Turistika', 6],
+  ['futbal', 'Futbal, loptové hry', 7],
+  ['joga', 'Joga, strečing', 2.5],
+].map(([id, name, met]) => ({ id, name, met }));
+const ACT_BY_ID = new Map(ACTIVITIES.map(a => [a.id, a]));
+
 const SUGGEST = [['vlocky', 60], ['vajce', 110], ['kur-prsia', 150], ['ryza', 80], ['tvaroh-ntuc', 250], ['banan', 120], ['whey', 30]];
-const DEFAULT_GOALS = { kcal: 2400, p: 160, c: 270, f: 75 };
+const VOICE_EXAMPLES = [
+  'Na raňajky dve vajcia, krajec chleba s maslom a kávu',
+  'Na obed 150 gramov kuracích pŕs a 200 g ryže',
+  'Po tréningu odmerka proteínu a banán, k tomu pol litra vody',
+];
+const DEFAULT_GOALS = { kcal: 2400, p: 160, c: 270, f: 75, water: 2500, weight: 80, addActs: true };
 const LS_KEY = 'dennik-potravin:v1';
+const GLASS = 250;
 
 /* ---------- Pomocné ---------- */
 
@@ -491,14 +629,18 @@ const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const nf0 = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 2 });
 const fk = n => nf0.format(Math.round(n || 0));
 const fm = n => { n = n || 0; return (Math.abs(n) < 10 ? nf1 : nf0).format(n); };
+const fl = ml => nf2.format((ml || 0) / 1000);
 const r1 = n => Math.round((n || 0) * 10) / 10;
 const num = v => { const n = parseFloat(String(v ?? '').replace(/\s/g, '').replace(',', '.')); return Number.isFinite(n) ? n : NaN; };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const clone = o => JSON.parse(JSON.stringify(o));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const icon = (id, label) => `<svg aria-hidden="true"><use href="#${id}"/></svg>${label ? `<span class="sr">${label}</span>` : ''}`;
+const plural = (n, one, few, many) => n === 1 ? one : n >= 2 && n <= 4 ? few : many;
 
 const pad = n => String(n).padStart(2, '0');
 const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -525,7 +667,7 @@ function dayTitle(key) {
 
 function defaultMeal() {
   const n = new Date(), h = n.getHours() + n.getMinutes() / 60;
-  return h < 9.5 ? 'ranajky' : h < 11.5 ? 'desiata' : h < 14.5 ? 'obed' : h < 17.5 ? 'olovrant' : 'vecera';
+  return h < 9.5 ? 'ranajky' : h < 11.5 ? 'desiata' : h < 14.5 ? 'obed' : h < 17.5 ? 'olovrant' : h < 21 ? 'vecera' : 'vecera2';
 }
 
 const totals = items => items.reduce((a, it) => ({
@@ -540,17 +682,29 @@ const per100Text = f => `${fk(f.kcal)} kcal · B ${fm(f.p)} · S ${fm(f.c)} · T
 
 const S = {
   date: todayKey(),
-  days: {},
+  days: {}, // 'YYYY-MM-DD' -> { items: [], acts: [], water: ml }
   goals: { ...DEFAULT_GOALS },
   foods: [],
   mode: 'loading', // loading | cloud | local | memory
 };
-const UI = { sheet: null, lastFocus: null, pick: new Map(), today: todayKey() };
+const UI = { sheet: null, lastFocus: null, pick: new Map(), today: todayKey(), voice: null, rec: null, micBlocked: false, sample: null, aiBusy: null };
+const IN_CLAUDE = !!(window.claude && typeof window.claude.use === 'function');
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const canMic = () => !!SpeechRec && !IN_CLAUDE && !UI.micBlocked;
+
+const dayOf = key => S.days[key] || null;
 const dayItems = key => (S.days[key] && S.days[key].items) || [];
+const dayActs = key => (S.days[key] && S.days[key].acts) || [];
+const dayWater = key => (S.days[key] && S.days[key].water) || 0;
+const ensureDay = key => S.days[key] || (S.days[key] = { items: [], acts: [], water: 0 });
+const isEmptyDay = d => !d || (!d.items.length && !d.acts.length && !(d.water > 0));
 
 function normalizeGoals(g) {
   const out = { ...DEFAULT_GOALS };
-  if (g && typeof g === 'object') for (const k of Object.keys(out)) { const v = +g[k]; if (Number.isFinite(v) && v > 0) out[k] = v; }
+  if (g && typeof g === 'object') {
+    for (const k of ['kcal', 'p', 'c', 'f', 'water', 'weight']) { const v = +g[k]; if (Number.isFinite(v) && v > 0) out[k] = v; }
+    if (typeof g.addActs === 'boolean') out.addActs = g.addActs;
+  }
   return out;
 }
 function cleanPer(p) {
@@ -564,21 +718,42 @@ function cleanUnit(u) {
   const g = +u.g;
   return typeof u.name === 'string' && u.name.trim() && Number.isFinite(g) && g > 0 ? { name: u.name.trim().slice(0, 30), g } : null;
 }
+const nonneg = v => { v = +v; return Number.isFinite(v) && v >= 0 ? v : 0; };
 function cleanItem(it) {
   if (!it || typeof it !== 'object') return null;
-  const n = k => { const v = +it[k]; return Number.isFinite(v) && v >= 0 ? v : 0; };
   const g = +it.g;
   return {
     id: typeof it.id === 'string' && it.id ? it.id.slice(0, 40) : uid(),
     meal: MEAL_NAME[it.meal] ? it.meal : 'obed',
     name: String(it.name || 'Bez názvu').slice(0, 120),
     g: Number.isFinite(g) && g > 0 ? g : null,
-    kcal: n('kcal'), p: n('p'), c: n('c'), f: n('f'),
+    kcal: nonneg(it.kcal), p: nonneg(it.p), c: nonneg(it.c), f: nonneg(it.f),
     per: cleanPer(it.per),
     fid: typeof it.fid === 'string' ? it.fid.slice(0, 60) : null,
     unit: cleanUnit(it.unit),
     t: Number.isFinite(+it.t) ? +it.t : Date.now(),
   };
+}
+function cleanAct(a) {
+  if (!a || typeof a !== 'object') return null;
+  const min = +a.min;
+  return {
+    id: typeof a.id === 'string' && a.id ? a.id.slice(0, 40) : uid(),
+    aid: typeof a.aid === 'string' && ACT_BY_ID.has(a.aid) ? a.aid : null,
+    name: String(a.name || 'Aktivita').slice(0, 80),
+    min: Number.isFinite(min) && min > 0 ? min : null,
+    kcal: nonneg(a.kcal),
+    t: Number.isFinite(+a.t) ? +a.t : Date.now(),
+  };
+}
+function cleanDay(v) {
+  if (!v || typeof v !== 'object') return null;
+  const d = {
+    items: (Array.isArray(v.items) ? v.items : []).map(cleanItem).filter(Boolean),
+    acts: (Array.isArray(v.acts) ? v.acts : []).map(cleanAct).filter(Boolean),
+    water: Math.min(20000, Math.round(nonneg(v.water))),
+  };
+  return isEmptyDay(d) ? null : d;
 }
 function cleanFood(f) {
   if (!f || typeof f !== 'object' || typeof f.name !== 'string' || !f.name.trim()) return null;
@@ -603,11 +778,7 @@ function startLocal() {
       S.goals = normalizeGoals(d.goals);
       S.foods = (Array.isArray(d.foods) ? d.foods : []).map(cleanFood).filter(Boolean);
       S.days = {};
-      for (const [k, v] of Object.entries(d.days || {})) {
-        if (!isDayKey(k) || !v || !Array.isArray(v.items)) continue;
-        const items = v.items.map(cleanItem).filter(Boolean);
-        if (items.length) S.days[k] = { items };
-      }
+      for (const [k, v] of Object.entries(d.days || {})) { const day = isDayKey(k) && cleanDay(v); if (day) S.days[k] = day; }
     } catch (e) { /* poškodené dáta ignorujeme */ }
   }
   S.mode = lsSet(raw ?? JSON.stringify({ v: 1, days: {}, goals: S.goals, foods: [] })) ? 'local' : 'memory';
@@ -627,7 +798,7 @@ function saveLocal() {
 function startCloud(db, userId) {
   Cloud.col = db.collection('data/users/' + userId);
   S.mode = 'cloud';
-  renderFoot();
+  render();
   subscribe();
 }
 
@@ -649,10 +820,7 @@ function applySnapshot(snap) {
     if (!v) continue;
     if (doc.id === 'settings') goals = v.goals;
     else if (doc.id === 'foods') foods = v.list;
-    else if (doc.id.startsWith('d') && isDayKey(v.date) && Array.isArray(v.items)) {
-      const items = v.items.map(cleanItem).filter(Boolean);
-      if (items.length) days[v.date] = { items };
-    }
+    else if (doc.id.startsWith('d') && isDayKey(v.date)) { const day = cleanDay(v); if (day) days[v.date] = day; }
   }
   // Dokumenty s ešte neodoslaným zápisom nechávame tak, ako ich má stránka.
   for (const k of Object.keys(days)) if (isPending('d' + k)) delete days[k];
@@ -705,11 +873,10 @@ function reportWriteError(e) {
 }
 
 function saveDay(key) {
-  const day = S.days[key];
-  if (day && !day.items.length) delete S.days[key];
+  if (isEmptyDay(S.days[key])) delete S.days[key];
   if (S.mode === 'cloud') {
-    const live = S.days[key];
-    return cloudWrite('d' + key, live ? { kind: 'day', date: key, items: live.items } : DEL);
+    const d = S.days[key];
+    return cloudWrite('d' + key, d ? { kind: 'day', date: key, items: d.items, acts: d.acts, water: d.water } : DEL);
   }
   return saveLocal();
 }
@@ -722,9 +889,8 @@ function saveFoods() {
 
 /* ---------- Úpravy denníka ---------- */
 
-function addItem(key, item) {
-  const day = S.days[key] || (S.days[key] = { items: [] });
-  day.items.push(item);
+function addItems(key, items) {
+  ensureDay(key).items.push(...items);
   saveDay(key);
 }
 function removeItems(key, ids) {
@@ -734,6 +900,11 @@ function removeItems(key, ids) {
   day.items = day.items.filter(it => !ids.includes(it.id));
   saveDay(key);
   return removed;
+}
+function changeWater(key, delta) {
+  const d = ensureDay(key);
+  d.water = Math.max(0, Math.min(20000, d.water + delta));
+  saveDay(key);
 }
 function itemFromFood(food, g, meal) {
   const per = { kcal: food.kcal, p: food.p, c: food.c, f: food.f };
@@ -759,11 +930,240 @@ function recentFoods(limit) {
   return out;
 }
 
+function streakDays() {
+  let key = todayKey();
+  if (!dayItems(key).length) key = addDays(key, -1);
+  let n = 0;
+  while (dayItems(key).length && n < 3650) { n++; key = addDays(key, -1); }
+  return n;
+}
+
+const actKcal = (met, min) => Math.round(met * S.goals.weight * min / 60);
+
+/* ---------- Hlasový zápis: rozpoznanie vety ---------- */
+
+const NUM_WORDS = {
+  jeden: 1, jedna: 1, jedno: 1, jednu: 1, jedneho: 1, jednej: 1, dva: 2, dve: 2, dvoch: 2, tri: 3, troch: 3,
+  styri: 4, styroch: 4, pat: 5, piatich: 5, sest: 6, sedem: 7, osem: 8, devat: 9, desat: 10, jedenast: 11, dvanast: 12,
+  patnast: 15, dvadsat: 20, tridsat: 30, styridsat: 40, patdesiat: 50, sestdesiat: 60, sedemdesiat: 70, osemdesiat: 80,
+  devatdesiat: 90, sto: 100, dvesto: 200, tristo: 300, styristo: 400, patsto: 500, pol: 0.5, polovicu: 0.5, polovica: 0.5,
+  stvrt: 0.25, stvrtku: 0.25, poldruha: 1.5,
+};
+const UNIT_WORDS = [
+  { re: /^(g|gr|gram\w*)$/, mul: 1 },
+  { re: /^(kg|kil[oa]?|kilogram\w*)$/, mul: 1000 },
+  { re: /^(dkg|dek[oa]|dekagram\w*)$/, mul: 10 },
+  { re: /^(ml|mililit\w*)$/, mul: 1 },
+  { re: /^(dl|dec[iy]|decilit\w*)$/, mul: 100 },
+  { re: /^(l|lit(er|ra|re|rov|rik\w*)?)$/, mul: 1000 },
+  { re: /^pollitr\w*$/, mul: 500 },
+  { re: /^(ks|kus|kusy|kusov|kusok|kusky|kuskov)$/, generic: true },
+  { re: /^(porci[aeiu]?|porciou)$/, generic: true, g: 250 },
+  { re: /^balen\w*$/, generic: true },
+  { re: /^(krajec|krajc\w*)$/, g: 40 },
+  { re: /^(platok|platk\w*)$/, g: 20 },
+  { re: /^(lyzick\w*|lyziciek)$/, g: 5 },
+  { re: /^(lyzic[aeiu]?|lyzicou|lyzic)$/, g: 15 },
+  { re: /^(odmerk\w*|odmeriek|scoop\w*)$/, g: 30 },
+  { re: /^pohar\w*$/, g: 250 },
+  { re: /^hrst\w*$/, g: 30 },
+  { re: /^kelim\w*$/, g: 150 },
+  { re: /^konzerv\w*$/, g: 112 },
+  { re: /^tanier\w*$/, g: 350 },
+  { re: /^(misk\w*|misiek)$/, g: 250 },
+  { re: /^plechov\w*$/, g: 330 },
+  { re: /^(flas\w*|flias)$/, g: 500 },
+  { re: /^(salk\w*|saliek)$/, g: 150 },
+];
+const SEP_WORDS = new Set(['a', 'aj', 's', 'so', 'plus', 'potom', 'este', 'tiez', 'navyse']);
+const STOP_WORDS = new Set(('som si sa sme ste mal mala malo mali jedol jedla jedli zjedol zjedla zjedli vypil vypila vypili pil pila ' +
+  'dal dala dali mi ma na k ku ako asi cca cirka okolo zhruba priblizne tak no do z zo bol bola bolo boli by dnes trochu nejaky ' +
+  'nejaku nejake nejaka moj moja moje velky velka velke velku maly male malu pre po pred cez od uz len iba ked ze to ten tu tam ' +
+  'typ par tomu treningu trening treningom cvicenim cviceni').split(' '));
+const SUFFIXES = ['iami', 'ami', 'ach', 'ich', 'ych', 'ymi', 'ovi', 'och', 'ov', 'om', 'ou', 'ej', 'ia', 'ie', 'iu', 'ii', 'mi', 'a', 'e', 'i', 'o', 'u', 'y'];
+const WATER_STEMS = new Set(['vod', 'vodick', 'mineralk', 'sodovk']);
+
+function stem(w) {
+  for (const s of SUFFIXES) if (w.length - s.length >= 3 && w.endsWith(s)) return w.slice(0, -s.length);
+  return w;
+}
+function stemMatch(a, b) {
+  if (a === b) return true;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return i >= 4 && i >= Math.min(a.length, b.length) - 1;
+}
+const wordList = s => norm(s).split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !/\d/.test(w) && !STOP_WORDS.has(w) && w !== 'bez' && w !== 's');
+
+const termCache = new WeakMap();
+function termsOf(f) {
+  let t = termCache.get(f);
+  if (t) return t;
+  const n = f.name;
+  const paren = (n.match(/\(([^)]*)\)/g) || []).join(' ');
+  t = {
+    req: wordList(n.replace(/\([^)]*\)/g, ' ')).map(stem),
+    opt: wordList(paren).map(stem),
+    alts: (ALIASES[f.id] || []).map(a => wordList(a).map(stem)),
+  };
+  termCache.set(f, t);
+  return t;
+}
+
+function rankFoods(q) {
+  const res = [];
+  for (const f of [...S.foods, ...FOODS]) {
+    const T = termsOf(f);
+    let best = 0;
+    for (const terms of [T.req, ...T.alts]) {
+      if (!terms.length) continue;
+      const m = terms.filter(t => q.some(s => stemMatch(s, t))).length;
+      if (m) best = Math.max(best, m * 2 + (m / terms.length) * 3);
+    }
+    if (!best) continue;
+    best += T.opt.filter(t => q.some(s => stemMatch(s, t))).length * 1.5;
+    if (VOICE_PREF.has(f.id)) best += 0.4;
+    if (f.custom) best += 0.3;
+    res.push({ food: f, score: best });
+  }
+  return res.sort((a, b) => b.score - a.score);
+}
+
+function mealOf(n) {
+  if (/^ranaj/.test(n) || n === 'rano') return 'ranajky';
+  if (/^desiat(a|u|ou|e|y)?$/.test(n)) return 'desiata';
+  if (/^obed/.test(n)) return 'obed';
+  if (/^olovrant/.test(n)) return 'olovrant';
+  if (/^vecer/.test(n)) return 'vecera';
+  return null;
+}
+
+function amountFor(p, food) {
+  const fu = food && food.unit, n = p.qty, u = p.unit;
+  if (u && u.mul) return { g: r1((n ?? 1) * u.mul), est: false };
+  if (u) {
+    const same = !!fu && (u.generic || u.re.test(norm(fu.name)));
+    const per = same ? fu.g : (u.g || (fu ? fu.g : 100));
+    return { g: r1((n ?? 1) * per), est: !same };
+  }
+  if (n != null) {
+    if (n > 20) return { g: r1(n), est: false };
+    if (fu) return { g: r1(n * fu.g), est: false };
+    return { g: r1(n * 100), est: true };
+  }
+  return { g: fu ? fu.g : 100, est: true };
+}
+
+// Rozloží vetu typu „na raňajky dve vajcia a krajec chleba, na obed 150 g ryže“ na položky.
+function parseLocal(text, defMeal) {
+  let t = ' ' + String(text).toLowerCase() + ' ';
+  t = t.replace(/(\d)[.,](\d)/g, '$1·$2')
+    .replace(/(\d)([^\d\s·.,;:!?%·-])/g, '$1 $2')
+    .replace(/\s+a\s+pol\b/g, ' apol');
+  const segs = [];
+  for (const part of t.split(/[,;.!?\n]+|\s[-–]\s/)) {
+    let cur = [];
+    for (const w of part.split(/\s+/)) {
+      const o = w.replace(/·/g, ',').replace(/^["„“'(]+|["„“')]+$/g, '');
+      const n = norm(w).replace(/·/g, '.').replace(/[^a-z0-9.]/g, '');
+      if (!n) continue;
+      if (SEP_WORDS.has(n)) { if (cur.length) segs.push(cur); cur = []; continue; }
+      cur.push({ o, n });
+    }
+    if (cur.length) segs.push(cur);
+  }
+  const parsed = segs.map(seg => {
+    let meal = null, qty = null, unit = null;
+    const food = [];
+    for (let i = 0; i < seg.length; i++) {
+      const n = seg[i].n;
+      if (n === 'bez') { i++; continue; }
+      if (/^druh(a|u|ej|ou)$/.test(n) && seg[i + 1] && /^vecer/.test(seg[i + 1].n)) { meal = 'vecera2'; i++; continue; }
+      if (n === 'noc' || n === 'spanim') { meal = 'vecera2'; continue; }
+      const m = mealOf(n);
+      if (m) { meal = m; continue; }
+      if (/^\d+(\.\d+)?$/.test(n)) { qty = (qty || 0) + parseFloat(n); continue; }
+      if (n === 'apol') { qty = (qty ?? 1) + 0.5; continue; }
+      if (Object.prototype.hasOwnProperty.call(NUM_WORDS, n)) { qty = (qty || 0) + NUM_WORDS[n]; continue; }
+      const u = !unit && UNIT_WORDS.find(x => x.re.test(n));
+      if (u) { unit = u; continue; }
+      if (STOP_WORDS.has(n) || n.length < 2) continue;
+      food.push(seg[i]);
+    }
+    return { meal, qty, unit, food, orig: seg.map(x => x.o).join(' ') };
+  });
+  const firstMeal = (parsed.find(p => p.meal) || {}).meal || null;
+  let last = null;
+  for (const p of parsed) { if (p.meal) last = p.meal; p.mealFinal = p.meal || last || firstMeal || defMeal; }
+
+  const out = { items: [], water: 0, unmatched: [] };
+  for (const p of parsed) {
+    if (!p.food.length) continue;
+    const q = p.food.map(x => stem(x.n));
+    if (q.some(s => WATER_STEMS.has(s))) { out.water += amountFor(p, { unit: { name: 'pohár', g: GLASS } }).g; continue; }
+    const ranked = rankFoods(q);
+    if (!ranked.length || ranked[0].score < 3.5) { out.unmatched.push(p.orig); continue; }
+    const food = ranked[0].food;
+    const { g, est } = amountFor(p, food);
+    out.items.push({ text: p.orig, food, alts: ranked.slice(0, 6).map(r => r.food), g, est, meal: p.mealFinal, on: true });
+  }
+  return out;
+}
+
+/* ---------- Hlasový zápis: rozpoznanie cez Claude (v Artifacte) ---------- */
+
+function catalogText() {
+  return [...S.foods, ...FOODS].map(f => `${f.id}|${f.name}|${f.kcal},${f.p},${f.c},${f.f}|${f.unit ? f.unit.name + ' ' + f.unit.g + ' g' : ''}`).join('\n');
+}
+
+async function parseWithClaude(text, defMeal, signal) {
+  const prompt = `Si asistent kalorickej aplikácie (ako MyFitnessPal alebo Kalorické tabuľky). Používateľ po slovensky nadiktoval, čo zjedol alebo vypil. Text môže obsahovať chyby rozpoznávania reči.
+
+Rozlož text na jednotlivé potraviny a nápoje. Pre každú vráť objekt:
+- "text": úsek pôvodného textu, ktorého sa položka týka,
+- "fid": id z katalógu nižšie, ak potravina zodpovedá položke katalógu; inak null,
+- "name": krátky slovenský názov potraviny (vždy),
+- "grams": množstvo v gramoch (ml ber ako gramy); kusy, krajce, lyžice a porcie prepočítaj podľa katalógu alebo bežnej veľkosti,
+- "estimated": true, ak množstvo v texte nezaznelo a odhadol si ho,
+- "meal": jedno z ranajky, desiata, obed, olovrant, vecera, vecera2 (druhá večera), alebo null, ak jedlo dňa nezaznelo,
+- "per100": {"kcal": číslo, "p": číslo, "c": číslo, "f": číslo} na 100 g (bielkoviny, sacharidy, tuky v gramoch); vyplň iba keď fid je null, podľa bežných slovenských nutričných tabuliek.
+Čistú vodu (aj minerálku) nedávaj medzi položky; jej celkové množstvo v ml daj do "water_ml".
+Odpovedz iba JSON objektom v tvare {"items": [...], "water_ml": 0}.
+
+Katalóg (id|názov|kcal,bielkoviny,sacharidy,tuky na 100 g|bežná porcia):
+${catalogText()}
+
+Text používateľa:
+"""${text.slice(0, 2000)}"""`;
+  const res = await UI.sample.json(prompt, { modelTier: 'quick', signal });
+  const out = { items: [], water: 0, unmatched: [] };
+  const list = res && Array.isArray(res.items) ? res.items : [];
+  for (const x of list.slice(0, 30)) {
+    if (!x || typeof x !== 'object') continue;
+    const g = num(x.grams);
+    const meal = MEAL_NAME[x.meal] ? x.meal : defMeal;
+    let food = typeof x.fid === 'string' ? findFood(x.fid) : null;
+    if (!food) {
+      const per = cleanPer(x.per100);
+      const name = String(x.name || x.text || '').trim().slice(0, 80);
+      if (!per || !name || per.kcal > 950 || per.p > 100 || per.c > 100 || per.f > 100) { if (x.text || x.name) out.unmatched.push(String(x.text || x.name).slice(0, 80)); continue; }
+      food = { id: 'ai:' + uid(), name, ...per, unit: null, adhoc: true, ai: true };
+    }
+    const local = rankFoods(wordList(String(x.text || x.name || '')).map(stem)).slice(0, 5).map(r => r.food);
+    const alts = [food, ...local.filter(f => f.id !== food.id)];
+    out.items.push({ text: String(x.text || x.name || '').slice(0, 80), food, alts, g: g > 0 && g <= 5000 ? r1(g) : (food.unit ? food.unit.g : 100), est: !!x.estimated || !(g > 0), meal, on: true });
+  }
+  const w = num(res && res.water_ml);
+  if (w > 0 && w <= 10000) out.water = Math.round(w);
+  return out;
+}
+
 /* ---------- Vykresľovanie ---------- */
 
 function render() {
   renderDaybar();
   renderSummary();
+  renderWater();
   renderWeek();
   renderLedger();
   renderFoot();
@@ -775,22 +1175,22 @@ function renderDaybar() {
   $('#daySub').textContent = sub;
   $('#datePick').value = S.date;
   $('#todayBtn').disabled = S.date === todayKey();
-  $('#fab').disabled = $('#deskAdd').disabled = S.mode === 'loading';
+  document.querySelectorAll('[data-needs-store]').forEach(b => { b.disabled = S.mode === 'loading'; });
 }
 
 function renderSummary() {
   const t = totals(dayItems(S.date));
   const g = S.goals;
-  const scale = Math.max(g.kcal, t.kcal) || 1;
-  const fillPct = Math.min(t.kcal, g.kcal) / scale * 100;
-  const goalPct = g.kcal / scale * 100;
-  const overPct = Math.max(0, t.kcal - g.kcal) / scale * 100;
+  const burned = dayActs(S.date).reduce((a, x) => a + x.kcal, 0);
+  const target = g.kcal + (g.addActs ? burned : 0);
+  const scale = Math.max(target, t.kcal) || 1;
+  const fillPct = Math.min(t.kcal, target) / scale * 100;
+  const goalPct = target / scale * 100;
+  const overPct = Math.max(0, t.kcal - target) / scale * 100;
   let ticks = '';
   for (let v = 500; v < scale; v += 500) ticks += `<span class="tick" style="left:${(v / scale * 100).toFixed(2)}%"></span>`;
-  const left = g.kcal - t.kcal;
-  const leftText = left >= 0
-    ? `Zostáva <b>${fk(left)} kcal</b>`
-    : `<span class="over">Nad cieľom o <b>${fk(-left)} kcal</b></span>`;
+  const left = target - t.kcal;
+  const streak = streakDays();
   const macro = (key, name, cls) => {
     const v = t[key], goal = g[key];
     return `<div class="macro">
@@ -803,18 +1203,26 @@ function renderSummary() {
   const pk = t.p * 4, ck = t.c * 4, fkc = t.f * 9, mk = pk + ck + fkc;
   const pct = v => mk ? Math.round(v / mk * 100) : 0;
   $('#summary').innerHTML = `
-    <p class="eyebrow">${S.date === todayKey() ? 'Prijaté dnes' : 'Prijaté v tento deň'}</p>
+    <div class="board-top">
+      <p class="eyebrow">${S.date === todayKey() ? 'Prijaté dnes' : 'Prijaté v tento deň'}</p>
+      ${streak ? `<span class="streak" title="Počet dní po sebe so zápisom jedla"><svg aria-hidden="true"><use href="#i-flame"/></svg>${streak} ${plural(streak, 'deň', 'dni', 'dní')} v rade</span>` : ''}
+    </div>
     <div class="kcal-row">
       <div class="kcal-big">${fk(t.kcal)}<small>kcal</small></div>
-      <div class="kcal-goal">cieľ<b>${fk(g.kcal)}</b></div>
+      <div class="kj">${fk(t.kcal * 4.184)} kJ</div>
     </div>
-    <div class="kbar" role="progressbar" aria-label="Prijaté kalórie" aria-valuemin="0" aria-valuemax="${Math.round(g.kcal)}" aria-valuenow="${Math.round(t.kcal)}">
+    <div class="kbar" role="progressbar" aria-label="Prijaté kalórie" aria-valuemin="0" aria-valuemax="${Math.round(target)}" aria-valuenow="${Math.round(t.kcal)}">
       <div class="kbar-fill" style="width:${fillPct.toFixed(2)}%"></div>
       ${overPct ? `<div class="kbar-over" style="left:${goalPct.toFixed(2)}%;width:${overPct.toFixed(2)}%"></div>` : ''}
       ${ticks}
       ${overPct ? `<span class="goal-mark" style="left:${goalPct.toFixed(2)}%"></span>` : ''}
     </div>
-    <p class="kcal-left">${leftText} <span class="scale-note">· dieliky po 500 kcal</span></p>
+    <div class="formula" aria-label="Cieľ mínus jedlo${g.addActs ? ' plus aktivita' : ''} rovná sa zostáva">
+      <div><b>${fk(g.kcal)}</b><span>cieľ</span></div><i>−</i>
+      <div><b>${fk(t.kcal)}</b><span>jedlo</span></div>
+      ${g.addActs ? `<i>+</i><div><b>${fk(burned)}</b><span>aktivita</span></div>` : ''}
+      <i>=</i><div class="rem ${left < 0 ? 'over' : ''}"><b>${fk(left)}</b><span>${left < 0 ? 'nad cieľom' : 'zostáva'}</span></div>
+    </div>
     <div class="macros">
       ${macro('p', 'Bielkoviny', 'sw-p')}
       ${macro('c', 'Sacharidy', 'sw-c')}
@@ -831,6 +1239,25 @@ function renderSummary() {
         <span><i class="sw sw-f"></i>T ${pct(fkc)} %</span>
         <span>1 g B a S = 4 kcal, 1 g T = 9 kcal</span>
       </div>
+    </div>`;
+}
+
+function renderWater() {
+  const w = dayWater(S.date), goal = S.goals.water, loading = S.mode === 'loading';
+  const count = Math.min(16, Math.max(4, Math.round(goal / GLASS)));
+  const glasses = Array.from({ length: count }, (_, i) => {
+    const on = w >= (i + 1) * GLASS;
+    return `<button type="button" class="glass ${on ? 'on' : ''}" data-act="glass" data-i="${i}" ${loading ? 'disabled' : ''} aria-label="${fl((i + 1) * GLASS)} l" aria-pressed="${on}">
+      <svg viewBox="0 0 22 28" aria-hidden="true"><path class="g-fill" d="M4.1 9h13.8l-1.5 16.2H5.6z"/><path class="g-out" d="M2 2h18l-2 24H4z"/></svg></button>`;
+  }).join('');
+  $('#water').innerHTML = `
+    <div class="panel-head"><h2 class="eyebrow" id="waterTitle">Pitný režim</h2>
+      <span class="water-val"><b>${fl(w)}</b> / ${fl(goal)} l</span></div>
+    <div class="glasses">${glasses}</div>
+    <div class="water-actions">
+      <button type="button" class="btn small" data-act="water" data-d="${-GLASS}" ${w && !loading ? '' : 'disabled'}>− ${GLASS} ml</button>
+      <button type="button" class="btn small" data-act="water" data-d="${GLASS}" ${loading ? 'disabled' : ''}>+ ${GLASS} ml</button>
+      <button type="button" class="btn small" data-act="water" data-d="500" ${loading ? 'disabled' : ''}>+ 0,5 l</button>
     </div>`;
 }
 
@@ -869,6 +1296,13 @@ function renderWeek() {
     <p class="hint">Zapísané ${logged.length} zo 7 dní. Ťukni na stĺpec a prejdeš na daný deň.</p>`;
 }
 
+function itemSub(it) {
+  if (!it.g) return `porcia · B ${fm(it.p)} · S ${fm(it.c)} · T ${fm(it.f)}`;
+  const u = it.unit, n = u ? it.g / u.g : 0;
+  const units = u && it.g >= u.g && Math.abs(n - Math.round(n * 2) / 2) < 0.01 ? ` (${fm(n)} ${esc(u.name)})` : '';
+  return `${fk(it.g)} g${units} · B ${fm(it.p)} · S ${fm(it.c)} · T ${fm(it.f)}`;
+}
+
 function renderLedger() {
   const items = dayItems(S.date);
   const yItems = dayItems(addDays(S.date, -1));
@@ -876,8 +1310,10 @@ function renderLedger() {
   let html = '';
   if (!items.length) {
     html += `<div class="empty-day">
-      <p>${loading ? 'Načítavam tvoje záznamy…' : 'Na tento deň zatiaľ nie je nič zapísané. Pridaj jedlo k raňajkám, obedu či večeri, alebo začni jedným z častých:'}</p>
-      ${loading ? '' : `<div class="chips">${SUGGEST.map(([id, g]) => {
+      <p>${loading ? 'Načítavam tvoje záznamy…' : 'Na tento deň zatiaľ nie je nič zapísané. Najrýchlejšie je povedať to nahlas, napríklad „na raňajky dve vajcia a krajec chleba“.'}</p>
+      ${loading ? '' : `<button type="button" class="btn primary" data-act="voice">${icon('i-mic')}Nadiktovať jedlo</button>
+      <p class="hint" style="margin:0 0 8px">Alebo začni jedným z častých:</p>
+      <div class="chips">${SUGGEST.map(([id, g]) => {
         const f = FOOD_BY_ID.get(id);
         return `<button type="button" class="chip" data-act="suggest" data-fid="${id}" data-g="${g}">${esc(f.name.replace(/ \(.*\)$/, ''))} ${fk(g)} g</button>`;
       }).join('')}</div>`}
@@ -896,14 +1332,28 @@ function renderLedger() {
         <button type="button" class="item-btn" data-act="edit-item" data-id="${esc(it.id)}">
           <span class="item-name">${esc(it.name)}</span>
           <span class="item-kcal">${fk(it.kcal)} kcal</span>
-          <span class="item-sub">${it.g ? fk(it.g) + ' g' + (it.unit && Math.abs(it.g / it.unit.g - Math.round(it.g / it.unit.g)) < 0.01 && it.g >= it.unit.g ? ` (${fm(it.g / it.unit.g)} ${esc(it.unit.name)})` : '') + ' · ' : 'porcia · '}B ${fm(it.p)} · S ${fm(it.c)} · T ${fm(it.f)}</span>
+          <span class="item-sub">${itemSub(it)}</span>
         </button></li>`).join('')}</ul>` : `<p class="meal-empty">Zatiaľ nič.</p>`}
       <div class="meal-actions">
         <button type="button" class="btn small" data-act="add" data-meal="${m.id}" ${loading ? 'disabled' : ''}>+ Pridať</button>
+        <button type="button" class="btn small icon-btn" data-act="voice" data-meal="${m.id}" ${loading ? 'disabled' : ''} title="Nadiktovať">${icon('i-mic', 'Nadiktovať: ' + m.name)}</button>
         ${yCount && !loading ? `<button type="button" class="btn small ghost" data-act="copy-yday" data-meal="${m.id}">Kopírovať z predošlého dňa (${yCount})</button>` : ''}
       </div>
     </section>`;
   }
+  const acts = dayActs(S.date).slice().sort((a, b) => a.t - b.t);
+  const burned = acts.reduce((a, x) => a + x.kcal, 0);
+  html += `<section class="meal acts" aria-labelledby="h-acts">
+    <header class="meal-head"><h2 id="h-acts">Aktivita</h2>
+      ${acts.length ? `<div class="meal-sum"><span class="kc burn">${fk(burned)} kcal spálených</span></div>` : ''}</header>
+    ${acts.length ? `<ul class="items">${acts.map(a => `<li>
+      <button type="button" class="item-btn" data-act="edit-act" data-id="${esc(a.id)}">
+        <span class="item-name">${esc(a.name)}</span>
+        <span class="item-kcal burn">${fk(a.kcal)} kcal</span>
+        <span class="item-sub">${a.min ? fk(a.min) + ' min · ' : ''}spálené kalórie${S.goals.addActs ? ' sa pripočítajú k cieľu' : ''}</span>
+      </button></li>`).join('')}</ul>` : `<p class="meal-empty">Tréning alebo pohyb zapíš sem. Spálené kalórie sa pripočítajú k dennému cieľu.</p>`}
+    <div class="meal-actions"><button type="button" class="btn small" data-act="add-act" ${loading ? 'disabled' : ''}>+ Pridať aktivitu</button></div>
+  </section>`;
   $('#ledger').innerHTML = html;
 }
 
@@ -921,33 +1371,35 @@ function renderFoot() {
   $('#foot').innerHTML = `<span><i class="dot ${cls}"></i>${esc(text)}</span>
     <button type="button" class="linklike" data-act="open-settings">Ciele, moje potraviny a záloha</button>
     <span>Nutričné hodnoty v databáze sú orientačné, na 100 g.</span>`;
-  $('#fab').disabled = $('#deskAdd').disabled = S.mode === 'loading';
+  document.querySelectorAll('[data-needs-store]').forEach(b => { b.disabled = S.mode === 'loading'; });
 }
 
 /* ---------- Spodný panel ---------- */
 
 function openSheet(state) {
   if (!UI.sheet) UI.lastFocus = document.activeElement;
+  if (UI.sheet && UI.sheet.view === 'voice' && state.view !== 'voice') stopListening(true);
   UI.sheet = state;
   $('#sheetWrap').hidden = false;
   document.documentElement.classList.add('locked');
   renderSheet(true);
 }
 function closeSheet() {
+  stopListening(true);
+  if (UI.aiBusy) UI.aiBusy.abort();
   UI.sheet = null;
+  UI.voice = null;
   $('#sheetWrap').hidden = true;
   $('#sheet').innerHTML = '';
   document.documentElement.classList.remove('locked');
   if (UI.lastFocus && document.contains(UI.lastFocus)) UI.lastFocus.focus();
 }
 
-const closeBtn = `<button type="button" class="btn ghost icon-btn" data-act="close-sheet" aria-label="Zavrieť">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
-const backBtn = `<button type="button" class="btn ghost icon-btn" data-act="back" aria-label="Späť">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>`;
+const closeBtn = `<button type="button" class="btn ghost icon-btn" data-act="close-sheet">${icon('i-x', 'Zavrieť')}</button>`;
+const backBtn = `<button type="button" class="btn ghost icon-btn" data-act="back">${icon('i-left', 'Späť')}</button>`;
 
-function mealChips(sel) {
-  return `<div class="sheet-section"><span class="lbl" id="mealLbl">Jedlo dňa</span>
+function mealChips(sel, label) {
+  return `<div class="sheet-section"><span class="lbl" id="mealLbl">${label || 'Jedlo dňa'}</span>
     <div class="chips" role="radiogroup" aria-labelledby="mealLbl">${MEALS.map(m =>
       `<button type="button" class="chip" role="radio" aria-checked="${m.id === sel}" data-act="set-meal" data-meal="${m.id}">${m.name}</button>`).join('')}</div></div>`;
 }
@@ -956,19 +1408,21 @@ function renderSheet(focus) {
   const st = UI.sheet;
   const el = $('#sheet');
   if (!st) return;
-  if (st.view === 'add') el.innerHTML = viewAdd(st);
-  else if (st.view === 'amount') el.innerHTML = viewAmount(st);
-  else if (st.view === 'edit') el.innerHTML = viewEdit(st);
-  else if (st.view === 'settings') el.innerHTML = viewSettings();
+  const views = { add: viewAdd, amount: viewAmount, edit: viewEdit, settings: viewSettings, voice: viewVoice, act: viewAct };
+  el.innerHTML = views[st.view](st);
   el.scrollTop = 0;
   if (st.view === 'add' && st.tab === 'search') { $('#foodSearch').value = st.q || ''; renderResults(); }
   if (st.view === 'amount' || st.view === 'edit') updatePreview();
   if (st.view === 'add' && st.tab === 'custom') updateCustomCheck();
   if (st.view === 'settings') { renderMyFoods(); updateGoalCheck(); }
+  if (st.view === 'voice') { $('#voiceText').value = UI.voice ? UI.voice.text : ''; renderVoiceResults(); }
+  if (st.view === 'act') updateActPreview();
   if (focus) {
     const target = st.view === 'add' ? el.querySelector('#foodSearch, #cfName, #qName')
-      : st.view === 'amount' ? $('#amountG') : el.querySelector('.sheet-head h2');
-    if (target) { if (target.tagName === 'H2') target.tabIndex = -1; target.focus({ preventScroll: true }); if (target.select) target.select(); }
+      : st.view === 'amount' ? $('#amountG')
+      : st.view === 'voice' && !canMic() ? $('#voiceText')
+      : el.querySelector('.sheet-head h2');
+    if (target) { if (target.tagName === 'H2') target.tabIndex = -1; target.focus({ preventScroll: true }); if (target.select && target.tagName === 'INPUT') target.select(); }
   }
 }
 
@@ -978,7 +1432,10 @@ function viewAdd(st) {
   if (st.tab === 'search') {
     body = `<div class="sheet-section">
       <label class="lbl" for="foodSearch">Hľadať potravinu</label>
-      <input class="field" type="search" id="foodSearch" placeholder="napr. ryža, tvaroh, vajce" autocomplete="off" enterkeyhint="search">
+      <div class="search-wrap">
+        <input class="field" type="search" id="foodSearch" placeholder="napr. ryža, tvaroh, vajce" autocomplete="off" enterkeyhint="search">
+        <button type="button" class="btn ghost small icon-btn" data-act="voice" data-from="add">${icon('i-mic', 'Nadiktovať')}</button>
+      </div>
       <div class="results" id="foodResults"></div></div>`;
   } else if (st.tab === 'custom') {
     body = `<form id="customForm" class="sheet-section" novalidate>
@@ -991,7 +1448,7 @@ function viewAdd(st) {
         <div><label class="lbl" for="cfC">Sacharidy (g)</label><input class="field" id="cfC" inputmode="decimal" autocomplete="off"></div>
         <div><label class="lbl" for="cfF">Tuky (g)</label><input class="field" id="cfF" inputmode="decimal" autocomplete="off"></div>
       </div>
-      <p class="hint" id="cfCheck">Na obale je energia aj v kJ. Do poľa patrí hodnota v kcal.</p>
+      <p class="hint" id="cfCheck"></p>
       <h3>Kus alebo porcia (nepovinné)</h3>
       <div class="grid2">
         <div><label class="lbl" for="cfUnit">Názov</label><input class="field" id="cfUnit" maxlength="30" placeholder="napr. kelímok" autocomplete="off"></div>
@@ -1015,7 +1472,7 @@ function viewAdd(st) {
       <div class="btn-row" style="margin-top:18px"><button class="btn primary block" type="submit" id="quickSubmit">Pridať: ${MEAL_NAME[st.meal]}</button></div>
     </form>`;
   }
-  return `<div class="sheet-head"><h2 id="sheetTitle">Pridať jedlo</h2>${closeBtn}</div>
+  return `<div class="sheet-head">${st.from === 'voice' ? backBtn : ''}<h2 id="sheetTitle">Pridať jedlo</h2>${closeBtn}</div>
     ${mealChips(st.meal)}
     <div class="tabs" role="tablist" aria-label="Spôsob zápisu">${tab('search', 'Databáza')}${tab('custom', 'Nová potravina')}${tab('quick', 'Rýchly zápis')}</div>
     ${body}`;
@@ -1034,8 +1491,9 @@ function foodRow(f) {
 function renderResults() {
   const box = $('#foodResults');
   if (!box) return;
-  const q = norm($('#foodSearch').value.trim());
-  UI.sheet.q = $('#foodSearch').value;
+  const raw = $('#foodSearch').value;
+  const q = norm(raw.trim());
+  UI.sheet.q = raw;
   UI.pick = new Map();
   const mine = S.foods.map(f => ({ ...f, custom: true }));
   if (!q) {
@@ -1057,10 +1515,14 @@ function renderResults() {
     const score = (n.startsWith(q) ? 0 : n.split(/[\s(,]+/).some(w => w.startsWith(words[0])) ? 1 : 2) - (f.custom ? 0.5 : 0);
     scored.push([score, n.length, f]);
   }
+  if (!scored.length) {
+    // Skúsime tvary slov („ryže“, „vajcia“) cez rovnaké porovnanie ako pri hlasovom zápise.
+    for (const r of rankFoods(wordList(raw).map(stem)).slice(0, 12)) if (r.score >= 3.5) scored.push([3, 0, r.food]);
+  }
   scored.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   box.innerHTML = scored.length
     ? `<div class="res-group">${scored.slice(0, 40).map(s => foodRow(s[2])).join('')}</div>`
-    : `<p class="no-res">„${esc($('#foodSearch').value.trim())}“ v databáze nie je. Pridaj ju cez <button type="button" class="linklike" data-act="tab" data-tab="custom">Nová potravina</button> alebo zapíš hodnoty cez <button type="button" class="linklike" data-act="tab" data-tab="quick">Rýchly zápis</button>.</p>`;
+    : `<p class="no-res">„${esc(raw.trim())}“ v databáze nie je. Pridaj ju cez <button type="button" class="linklike" data-act="tab" data-tab="custom">Nová potravina</button> alebo zapíš hodnoty cez <button type="button" class="linklike" data-act="tab" data-tab="quick">Rýchly zápis</button>.</p>`;
 }
 
 function qtyChips(food, g) {
@@ -1115,6 +1577,52 @@ function viewEdit(st) {
     </form>`;
 }
 
+function viewVoice(st) {
+  const mic = canMic();
+  const status = mic
+    ? 'Ťukni na mikrofón a povedz, čo si jedol. Môžeš vymenovať viac jedál naraz.'
+    : `Ťukni do poľa nižšie a nadiktuj to tlačidlom <span class="kbd-mic">${icon('i-mic')}</span> na klávesnici telefónu. Na počítači to napíš.`;
+  return `<div class="sheet-head">${st.from ? backBtn : ''}<h2 id="sheetTitle">Hlasový zápis</h2>${closeBtn}</div>
+    <div class="voice">
+      <button type="button" class="mic ${UI.rec ? 'live' : ''}" id="micBtn" data-act="mic" aria-pressed="${!!UI.rec}">${icon('i-mic', mic ? 'Začať alebo ukončiť nahrávanie' : 'Písať alebo diktovať')}</button>
+      <p class="mic-status" id="micStatus" aria-live="polite">${status}</p>
+    </div>
+    <label class="lbl" for="voiceText">Čo si jedol a pil</label>
+    <textarea class="field voice-text" id="voiceText" rows="3" placeholder="napr. ${esc(VOICE_EXAMPLES[0])}"></textarea>
+    <div class="btn-row" style="margin-top:10px"><button class="btn primary" type="button" id="parseBtn" data-act="parse">Rozpoznať jedlá</button></div>
+    <p class="hint" id="parseNote">${UI.sample ? 'Text rozpozná Claude a pri neznámych jedlách odhadne hodnoty. Pri prvom použití sa ťa opýta na povolenie.' : 'Množstvo povedz v gramoch, kusoch, krajcoch, lyžiciach či pohároch. Bez množstva použijem bežnú porciu.'}</p>
+    <div id="voiceResults"></div>
+    <div class="sheet-section">${mealChips(st.meal, 'Kam zapísať jedlá, pri ktorých nepovieš jedlo dňa')}</div>`;
+}
+
+function viewAct(st) {
+  const a = st.actId ? dayActs(S.date).find(x => x.id === st.actId) : null;
+  if (st.actId && !a) return `<div class="sheet-head"><h2 id="sheetTitle">Aktivita</h2>${closeBtn}</div><p>Táto aktivita už neexistuje.</p>`;
+  const kind = a ? (a.aid || 'custom') : 'posilnovna';
+  return `<div class="sheet-head"><h2 id="sheetTitle">${a ? esc(a.name) : 'Pridať aktivitu'}</h2>${closeBtn}</div>
+    <form id="actForm" class="sheet-section" novalidate>
+      <label class="lbl" for="actKind">Druh</label>
+      <select class="field" id="actKind">
+        ${ACTIVITIES.map(x => `<option value="${x.id}" ${x.id === kind ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}
+        <option value="custom" ${kind === 'custom' ? 'selected' : ''}>Vlastná aktivita</option>
+      </select>
+      <div id="actNameWrap" style="margin-top:12px" ${kind === 'custom' ? '' : 'hidden'}>
+        <label class="lbl" for="actName">Názov</label>
+        <input class="field" id="actName" maxlength="80" value="${a && kind === 'custom' ? esc(a.name) : ''}" placeholder="napr. Tenis" autocomplete="off">
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div><label class="lbl" for="actMin">Trvanie (min)</label><input class="field" id="actMin" inputmode="decimal" value="${a ? esc(a.min ? fk(a.min) : '') : '60'}"></div>
+        <div><label class="lbl" for="actKcal">Spálené (kcal)</label><input class="field" id="actKcal" inputmode="decimal" value="${a ? esc(fk(a.kcal).replace(/\s/g, '')) : ''}"></div>
+      </div>
+      <p class="hint" id="actHint"></p>
+      <p class="err" id="actErr" hidden></p>
+      <div class="btn-row" style="margin-top:18px">
+        ${a ? '<button class="btn danger" type="button" data-act="delete-act">Odstrániť</button>' : ''}
+        <button class="btn primary" type="submit">${a ? 'Uložiť zmeny' : 'Pridať aktivitu'}</button>
+      </div>
+    </form>`;
+}
+
 function viewSettings() {
   const g = S.goals;
   const [cls, text] = storageText();
@@ -1126,8 +1634,11 @@ function viewSettings() {
         <div><label class="lbl" for="gP">Bielkoviny (g)</label><input class="field" id="gP" inputmode="decimal" value="${esc(fm(g.p))}"></div>
         <div><label class="lbl" for="gC">Sacharidy (g)</label><input class="field" id="gC" inputmode="decimal" value="${esc(fm(g.c))}"></div>
         <div><label class="lbl" for="gF">Tuky (g)</label><input class="field" id="gF" inputmode="decimal" value="${esc(fm(g.f))}"></div>
+        <div><label class="lbl" for="gWater">Voda (l)</label><input class="field" id="gWater" inputmode="decimal" value="${esc(fl(g.water))}"></div>
+        <div><label class="lbl" for="gWeight">Tvoja hmotnosť (kg)</label><input class="field" id="gWeight" inputmode="decimal" value="${esc(fm(g.weight))}"></div>
       </div>
       <p class="hint" id="goalCheck"></p>
+      <label class="check"><input type="checkbox" id="gAddActs" ${g.addActs ? 'checked' : ''}><span>Pripočítať spálené kalórie z aktivity k dennému cieľu<br><span class="hint" style="margin:0">Hmotnosť slúži na výpočet spálených kalórií.</span></span></label>
       <p class="err" id="goalErr" hidden></p>
       <div class="btn-row" style="margin-top:14px"><button class="btn primary block" type="submit">Uložiť ciele</button></div>
     </form>
@@ -1144,7 +1655,7 @@ function viewSettings() {
       </div>
       <div id="exportBox" hidden style="margin-top:12px">
         <label class="lbl" for="exportText">Skopíruj text zálohy a ulož si ho do súboru</label>
-        <textarea class="field" id="exportText" readonly></textarea>
+        <textarea class="field mono" id="exportText" readonly></textarea>
         <button class="btn small" type="button" data-act="copy-export" style="margin-top:8px">Kopírovať</button>
       </div>
       <p class="hint"><i class="dot ${cls}"></i>${esc(text)}</p>
@@ -1184,7 +1695,7 @@ function updateCustomCheck() {
     el.textContent = `Skontroluj hodnoty: makrá zodpovedajú približne ${fk(mk)} kcal na 100 g.`;
   } else {
     el.className = 'hint';
-    el.textContent = 'Na obale je energia aj v kJ. Do poľa patrí hodnota v kcal.';
+    el.textContent = 'Na obale je energia aj v kJ. Do poľa patrí hodnota v kcal (kJ ÷ 4,184).';
   }
 }
 
@@ -1197,7 +1708,208 @@ function updateGoalCheck() {
   el.textContent = `Makrá spolu dávajú ${fk(mk)} kcal${off ? `, cieľ energie je ${fk(k)} kcal.` : '.'}`;
 }
 
+function updateActPreview(fromKcal) {
+  const kind = $('#actKind'), hint = $('#actHint');
+  if (!kind || !hint) return;
+  const a = ACT_BY_ID.get(kind.value);
+  $('#actNameWrap').hidden = !!a;
+  const min = num($('#actMin').value);
+  if (a && min > 0 && !fromKcal && !UI.sheet.kcalTouched) $('#actKcal').value = String(actKcal(a.met, min));
+  hint.textContent = a
+    ? `Odhad podľa náročnosti (${nf1.format(a.met)} MET) a hmotnosti ${fm(S.goals.weight)} kg. Hodnotu z hodiniek môžeš prepísať.`
+    : 'Zadaj spálené kalórie, napríklad z hodiniek.';
+}
+
 function showErr(id, msg) { const el = $(id); if (el) { el.textContent = msg; el.hidden = !msg; } }
+
+/* ---------- Hlasový zápis: rozhranie ---------- */
+
+function setMicStatus(html) { const el = $('#micStatus'); if (el) el.innerHTML = html; }
+
+function syncMicButton() {
+  const b = $('#micBtn');
+  if (!b) return;
+  b.classList.toggle('live', !!UI.rec);
+  b.setAttribute('aria-pressed', String(!!UI.rec));
+}
+
+function toggleMic() {
+  if (!canMic()) { const ta = $('#voiceText'); ta.focus(); return; }
+  if (UI.rec) { UI.rec.stop(); return; }
+  const rec = new SpeechRec();
+  rec.lang = 'sk-SK';
+  rec.interimResults = true;
+  rec.continuous = !/Android/i.test(navigator.userAgent);
+  rec.maxAlternatives = 1;
+  const ta = $('#voiceText');
+  const base = ta.value.trim() ? ta.value.trim() + ', ' : '';
+  let error = null;
+  rec.onresult = e => {
+    let text = '';
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    if (UI.sheet && UI.sheet.view === 'voice') { const el = $('#voiceText'); if (el) el.value = base + text.trim(); }
+  };
+  rec.onerror = e => { error = e.error; };
+  rec.onend = () => {
+    if (UI.rec !== rec) return;
+    UI.rec = null;
+    syncMicButton();
+    const msgs = {
+      'not-allowed': 'Prístup k mikrofónu je zakázaný. Povoľ ho v nastaveniach prehliadača alebo nadiktuj text klávesnicou.',
+      'service-not-allowed': 'Prehliadač tu rozpoznávanie reči nepovolil. Nadiktuj text klávesnicou do poľa nižšie.',
+      'no-speech': 'Nič som nepočul. Ťukni na mikrofón a hovor bližšie k telefónu.',
+      'audio-capture': 'Nenašiel som mikrofón. Napíš text do poľa nižšie.',
+      'network': 'Rozpoznávanie reči potrebuje internet. Skús to znova alebo text napíš.',
+      'language-not-supported': 'Prehliadač nevie rozpoznávať slovenčinu. Nadiktuj text klávesnicou.',
+    };
+    if (error && error !== 'aborted') {
+      if (['not-allowed', 'service-not-allowed', 'audio-capture', 'language-not-supported'].includes(error)) UI.micBlocked = true;
+      setMicStatus(esc(msgs[error] || 'Rozpoznávanie reči zlyhalo. Skús to znova alebo text napíš.'));
+      return;
+    }
+    const el = $('#voiceText');
+    if (el && el.value.trim()) { setMicStatus('Hotovo. Skontroluj rozpoznané jedlá nižšie.'); runParse(); }
+    else setMicStatus('Ťukni na mikrofón a povedz, čo si jedol.');
+  };
+  try {
+    rec.start();
+    UI.rec = rec;
+    syncMicButton();
+    setMicStatus('<b>Počúvam…</b> Keď dohovoríš, ťukni na mikrofón znova.');
+  } catch (e) {
+    UI.micBlocked = true;
+    setMicStatus('Mikrofón sa nepodarilo spustiť. Nadiktuj text klávesnicou do poľa nižšie.');
+  }
+}
+
+function stopListening(silent) {
+  if (!UI.rec) return;
+  const rec = UI.rec;
+  UI.rec = null;
+  try { silent ? rec.abort() : rec.stop(); } catch (e) { /* už skončilo */ }
+  syncMicButton();
+}
+
+async function runParse() {
+  const ta = $('#voiceText');
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) { setMicStatus('Najprv povedz alebo napíš, čo si jedol.'); ta.focus(); return; }
+  const meal = UI.sheet.meal;
+  const note = $('#parseNote');
+  if (UI.sample) {
+    if (UI.aiBusy) UI.aiBusy.abort();
+    const ctl = new AbortController();
+    UI.aiBusy = ctl;
+    $('#voiceResults').innerHTML = `<p class="hint"><span class="busy">Rozpoznávam jedlá…</span> <button type="button" class="linklike" data-act="ai-cancel">Zrušiť</button></p>`;
+    $('#parseBtn').disabled = true;
+    try {
+      const res = await parseWithClaude(text, meal, ctl.signal);
+      if (UI.aiBusy !== ctl) return;
+      UI.voice = { text, ...res, source: 'ai' };
+      if (note) note.textContent = 'Rozpoznal Claude. Skontroluj množstvá a hodnoty, potom ich pridaj.';
+    } catch (e) {
+      if (UI.aiBusy !== ctl) return;
+      const code = e && e.code;
+      if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].includes(code)) UI.sample = null;
+      UI.voice = { text, ...parseLocal(text, meal), source: 'local' };
+      if (note) note.textContent = code === 'cancelled' ? 'Rozpoznal som to priamo v aplikácii.'
+        : code === 'rate_limited' ? 'Claude je teraz vyťažený, rozpoznal som to priamo v aplikácii.'
+        : 'Claude nebol dostupný, rozpoznal som to priamo v aplikácii.';
+    } finally {
+      if (UI.aiBusy === ctl) UI.aiBusy = null;
+      const b = $('#parseBtn');
+      if (b) b.disabled = false;
+    }
+  } else {
+    UI.voice = { text, ...parseLocal(text, meal), source: 'local' };
+  }
+  renderVoiceResults();
+}
+
+function renderVoiceResults() {
+  const box = $('#voiceResults');
+  if (!box) return;
+  const v = UI.voice;
+  if (!v) {
+    box.innerHTML = `<h3>Skús napríklad</h3><div class="examples">${VOICE_EXAMPLES.map((x, i) =>
+      `<button type="button" class="example" data-act="example" data-i="${i}">„${esc(x)}“</button>`).join('')}</div>`;
+    return;
+  }
+  if (!v.items.length && !v.water && !v.unmatched.length) {
+    box.innerHTML = `<p class="hint warn">V texte som nenašiel žiadne jedlo. Skús to povedať inak, napríklad „200 gramov ryže a kuracie prsia“.</p>`;
+    return;
+  }
+  const rows = v.items.map((it, i) => {
+    const t = fromPer(it.food, it.g || 0);
+    const foodCtl = it.alts.length > 1
+      ? `<select class="field" data-vi="${i}" data-k="food" aria-label="Potravina">${it.alts.map((f, j) =>
+          `<option value="${j}" ${f === it.food ? 'selected' : ''}>${esc(f.name)}</option>`).join('')}</select>`
+      : `<div class="vr-name">${esc(it.food.name)}</div>`;
+    return `<li class="vr ${it.on ? '' : 'off'}">
+      <input type="checkbox" data-vi="${i}" data-k="on" ${it.on ? 'checked' : ''} aria-label="Pridať ${esc(it.food.name)}">
+      <div class="vr-body">
+        ${foodCtl}
+        <div class="vr-sub">„${esc(it.text)}“${it.est ? ' · <span class="est">množstvo odhadnuté</span>' : ''}${it.food.ai ? ' · hodnoty odhadol Claude' : ''}</div>
+        <div class="vr-ctrl">
+          <div class="vr-g-wrap"><input class="field" inputmode="decimal" data-vi="${i}" data-k="g" value="${esc(fm(it.g))}" aria-label="Množstvo v gramoch"><span>g</span></div>
+          <select class="field" data-vi="${i}" data-k="meal" aria-label="Jedlo dňa">${MEALS.map(m => `<option value="${m.id}" ${m.id === it.meal ? 'selected' : ''}>${m.name}</option>`).join('')}</select>
+          <span class="vr-kcal" id="vrk-${i}">${fk(t.kcal)} kcal</span>
+        </div>
+      </div>
+    </li>`;
+  }).join('');
+  const water = v.water ? `<li class="vr ${v.waterOn === false ? 'off' : ''}">
+      <input type="checkbox" data-vi="water" data-k="on" ${v.waterOn === false ? '' : 'checked'} aria-label="Pridať vodu">
+      <div class="vr-body"><div class="vr-name">Voda ${fk(v.water)} ml</div><div class="vr-sub">Pripočíta sa k pitnému režimu.</div></div>
+    </li>` : '';
+  const unmatched = v.unmatched.length ? `<div class="unmatched"><p>Toto som nerozpoznal:</p><ul>${v.unmatched.map((u, i) =>
+      `<li><span>„${esc(u)}“</span><button type="button" class="btn small" data-act="voice-search" data-i="${i}">Hľadať</button></li>`).join('')}</ul></div>` : '';
+  box.innerHTML = `<h3>Rozpoznané</h3><ul class="vr-list">${rows}${water}</ul>${unmatched}
+    <div class="voice-total"><span id="voiceCount"></span><b id="voiceKcal"></b></div>
+    <button type="button" class="btn primary block" id="voiceAdd" data-act="voice-add">Pridať do denníka</button>`;
+  updateVoiceTotal();
+}
+
+function updateVoiceTotal() {
+  const v = UI.voice;
+  if (!v || !$('#voiceKcal')) return;
+  const on = v.items.filter(it => it.on && it.g > 0);
+  const kcal = on.reduce((a, it) => a + fromPer(it.food, it.g).kcal, 0);
+  const n = on.length + (v.water && v.waterOn !== false ? 1 : 0);
+  $('#voiceCount').textContent = `${n} ${plural(n, 'položka', 'položky', 'položiek')} vybraných`;
+  $('#voiceKcal').textContent = `${fk(kcal)} kcal`;
+  $('#voiceAdd').disabled = !n;
+}
+
+function addVoice() {
+  const v = UI.voice;
+  if (!v) return;
+  const key = S.date;
+  const items = v.items.filter(it => it.on && it.g > 0).map((it, i) => ({ ...itemFromFood(it.food, r1(it.g), it.meal), t: Date.now() + i }));
+  const water = v.water && v.waterOn !== false ? v.water : 0;
+  if (!items.length && !water) return;
+  const day = ensureDay(key);
+  day.items.push(...items);
+  day.water = Math.min(20000, day.water + water);
+  saveDay(key);
+  closeSheet();
+  render();
+  const n = items.length;
+  const parts = [];
+  if (n) parts.push(`${n} ${plural(n, 'položka', 'položky', 'položiek')}`);
+  if (water) parts.push(`${fk(water)} ml vody`);
+  toast(`Pridané: ${parts.join(' a ')}`, {
+    label: 'Späť', fn: () => {
+      const d = ensureDay(key);
+      const ids = items.map(x => x.id);
+      d.items = d.items.filter(x => !ids.includes(x.id));
+      d.water = Math.max(0, d.water - water);
+      saveDay(key);
+      render();
+    },
+  });
+}
 
 /* ---------- Toast ---------- */
 
@@ -1226,6 +1938,11 @@ function setDate(key) {
 
 function openAdd(meal) { openSheet({ view: 'add', meal: meal || defaultMeal(), tab: 'search', q: '' }); }
 
+function openVoice(meal, from) {
+  if (!UI.sheet || UI.sheet.view !== 'voice') UI.voice = null;
+  openSheet({ view: 'voice', meal: meal || (UI.sheet && UI.sheet.meal) || defaultMeal(), from: from || null });
+}
+
 function openAmount(food, g, from) {
   const meal = UI.sheet && UI.sheet.meal ? UI.sheet.meal : defaultMeal();
   const grams = g || food.lastG || (food.unit ? food.unit.g : 100);
@@ -1237,7 +1954,7 @@ function confirmAdd() {
   if (!(g > 0) || g > 10000) { showErr('#amountErr', 'Zadaj množstvo v gramoch, napríklad 120.'); return; }
   const item = itemFromFood(st.food, r1(g), st.meal);
   const key = S.date;
-  addItem(key, item);
+  addItems(key, [item]);
   closeSheet();
   render();
   toast(`${MEAL_NAME[item.meal]}: ${item.name}, ${fk(item.g)} g`, { label: 'Späť', fn: () => { removeItems(key, [item.id]); render(); } });
@@ -1272,7 +1989,7 @@ function deleteItem() {
   const [removed] = removeItems(key, [id]);
   closeSheet();
   render();
-  if (removed) toast(`Odstránené: ${removed.name}`, { label: 'Späť', fn: () => { addItem(key, removed); render(); } });
+  if (removed) toast(`Odstránené: ${removed.name}`, { label: 'Späť', fn: () => { addItems(key, [removed]); render(); } });
 }
 
 function copyYesterday(meal) {
@@ -1281,12 +1998,10 @@ function copyYesterday(meal) {
   if (!src.length) return;
   const now = Date.now();
   const copies = src.map((it, i) => ({ ...clone(it), id: uid(), t: now + i }));
-  const day = S.days[key] || (S.days[key] = { items: [] });
-  day.items.push(...copies);
-  saveDay(key);
+  addItems(key, copies);
   render();
   const n = copies.length;
-  toast(`${MEAL_NAME[meal]}: skopírované ${n} ${n === 1 ? 'položka' : n < 5 ? 'položky' : 'položiek'}`, {
+  toast(`${MEAL_NAME[meal]}: skopírované ${n} ${plural(n, 'položka', 'položky', 'položiek')}`, {
     label: 'Späť', fn: () => { removeItems(key, copies.map(c => c.id)); render(); },
   });
 }
@@ -1314,17 +2029,50 @@ function submitQuick() {
   const item = { id: uid(), meal: st.meal, name: $('#qName').value.trim() || 'Rýchly zápis', g: null,
     kcal: r1(kcal), p: r1(m('#qP')), c: r1(m('#qC')), f: r1(m('#qF')), per: null, fid: null, unit: null, t: Date.now() };
   const key = S.date;
-  addItem(key, item);
+  addItems(key, [item]);
   closeSheet();
   render();
   toast(`${MEAL_NAME[item.meal]}: ${item.name}, ${fk(item.kcal)} kcal`, { label: 'Späť', fn: () => { removeItems(key, [item.id]); render(); } });
 }
 
+function submitAct() {
+  const kind = $('#actKind').value, a = ACT_BY_ID.get(kind);
+  const min = num($('#actMin').value), kcal = num($('#actKcal').value);
+  const name = a ? a.name : $('#actName').value.trim();
+  if (!name) return showErr('#actErr', 'Doplň názov aktivity.');
+  if ($('#actMin').value.trim() && !(min > 0 && min <= 1440)) return showErr('#actErr', 'Trvanie zadaj v minútach, napríklad 60.');
+  if (!(kcal >= 0 && kcal <= 10000)) return showErr('#actErr', 'Zadaj spálené kalórie, napríklad 350.');
+  const key = S.date, day = ensureDay(key), st = UI.sheet;
+  const data = { aid: a ? a.id : null, name, min: min > 0 ? min : null, kcal: Math.round(kcal) };
+  if (st.actId) {
+    const x = day.acts.find(y => y.id === st.actId);
+    if (x) Object.assign(x, data);
+  } else day.acts.push({ id: uid(), ...data, t: Date.now() });
+  saveDay(key);
+  closeSheet();
+  render();
+  toast(st.actId ? 'Zmeny sú uložené.' : `Aktivita: ${name}, ${fk(data.kcal)} kcal`);
+}
+
+function deleteAct() {
+  const key = S.date, day = S.days[key], id = UI.sheet.actId;
+  if (!day) return closeSheet();
+  const i = day.acts.findIndex(x => x.id === id);
+  const [removed] = i >= 0 ? day.acts.splice(i, 1) : [];
+  saveDay(key);
+  closeSheet();
+  render();
+  if (removed) toast(`Odstránené: ${removed.name}`, { label: 'Späť', fn: () => { ensureDay(key).acts.push(removed); saveDay(key); render(); } });
+}
+
 function submitGoals() {
   const k = num($('#gKcal').value), p = num($('#gP').value), c = num($('#gC').value), f = num($('#gF').value);
+  const water = num($('#gWater').value), weight = num($('#gWeight').value);
   if (!(k >= 800 && k <= 10000)) return showErr('#goalErr', 'Cieľ energie zadaj v rozsahu 800 až 10 000 kcal.');
   if (![p, c, f].every(v => v > 0 && v <= 1500)) return showErr('#goalErr', 'Ciele makier zadaj v gramoch, každý väčší ako 0.');
-  S.goals = { kcal: Math.round(k), p: r1(p), c: r1(c), f: r1(f) };
+  if (!(water >= 0.5 && water <= 8)) return showErr('#goalErr', 'Cieľ vody zadaj v litroch, napríklad 2,5.');
+  if (!(weight >= 30 && weight <= 300)) return showErr('#goalErr', 'Hmotnosť zadaj v kilogramoch, napríklad 80.');
+  S.goals = { kcal: Math.round(k), p: r1(p), c: r1(c), f: r1(f), water: Math.round(water * 1000), weight: r1(weight), addActs: $('#gAddActs').checked };
   saveGoals();
   closeSheet();
   render();
@@ -1341,14 +2089,14 @@ function deleteFood(fid) {
 }
 
 function exportJson() {
-  return JSON.stringify({ app: 'dennik-potravin', version: 1, exported: new Date().toISOString(), goals: S.goals,
+  return JSON.stringify({ app: 'dennik-potravin', version: 2, exported: new Date().toISOString(), goals: S.goals,
     foods: S.foods.map(({ custom, ...f }) => f), days: S.days }, null, 2);
 }
 
 async function doExport() {
   const data = exportJson();
   const filename = `dennik-potravin-${todayKey()}.json`;
-  if (window.claude && typeof window.claude.use === 'function') {
+  if (IN_CLAUDE) {
     const dl = await window.claude.use('downloads').catch(() => null);
     if (dl) {
       try { await dl.save({ filename, data }); toast('Záloha je pripravená.'); return; }
@@ -1379,13 +2127,18 @@ async function doImport(file) {
   const changed = [];
   let added = 0;
   for (const [k, v] of Object.entries(d.days)) {
-    if (!isDayKey(k) || !v || !Array.isArray(v.items)) continue;
-    const day = S.days[k] || { items: [] };
+    const inc = isDayKey(k) && cleanDay(v);
+    if (!inc) continue;
+    const day = ensureDay(k);
     const ids = new Set(day.items.map(it => it.id));
-    const fresh = v.items.map(cleanItem).filter(it => it && !ids.has(it.id));
-    if (!fresh.length) continue;
+    const actIds = new Set(day.acts.map(a => a.id));
+    const fresh = inc.items.filter(it => !ids.has(it.id));
+    const freshActs = inc.acts.filter(a => !actIds.has(a.id));
+    const water = Math.max(day.water, inc.water);
+    if (!fresh.length && !freshActs.length && water === day.water) { if (isEmptyDay(day)) delete S.days[k]; continue; }
     day.items.push(...fresh);
-    S.days[k] = day;
+    day.acts.push(...freshActs);
+    day.water = water;
     added += fresh.length;
     changed.push(k);
   }
@@ -1418,6 +2171,17 @@ document.addEventListener('click', e => {
     case 'go-today': setDate(todayKey()); break;
     case 'go-day': setDate(t.dataset.date); break;
     case 'add': if (S.mode !== 'loading') openAdd(t.dataset.meal); break;
+    case 'voice': if (S.mode !== 'loading') openVoice(t.dataset.meal, t.dataset.from); break;
+    case 'add-act': openSheet({ view: 'act', actId: null }); break;
+    case 'edit-act': openSheet({ view: 'act', actId: t.dataset.id, kcalTouched: true }); break;
+    case 'delete-act': deleteAct(); break;
+    case 'water': changeWater(S.date, +t.dataset.d); renderWater(); break;
+    case 'glass': {
+      const target = (+t.dataset.i + 1) * GLASS, w = dayWater(S.date);
+      changeWater(S.date, (w === target ? target - GLASS : target) - w);
+      renderWater();
+      break;
+    }
     case 'suggest': { const f = FOOD_BY_ID.get(t.dataset.fid); if (f) openAmount(f, +t.dataset.g); break; }
     case 'copy-yday': copyYesterday(t.dataset.meal); break;
     case 'edit-item': {
@@ -1437,12 +2201,25 @@ document.addEventListener('click', e => {
     case 'tab': UI.sheet.tab = t.dataset.tab; renderSheet(true); break;
     case 'pick-food': { const f = UI.pick.get(t.dataset.key); if (f) openAmount(f, null, 'add'); break; }
     case 'back': {
-      openSheet({ view: 'add', meal: UI.sheet.meal, tab: 'search', q: '' });
+      const st = UI.sheet;
+      if (st.view === 'add' && st.from === 'voice') openSheet({ view: 'voice', meal: st.meal, from: null });
+      else if (st.view === 'voice' && st.from === 'add') openAdd(st.meal);
+      else openSheet({ view: 'add', meal: st.meal, tab: 'search', q: '' });
       break;
     }
     case 'qty': { const el = $('#amountG'); if (el) { el.value = fm(+t.dataset.g); updatePreview(); } break; }
     case 'delete-item': deleteItem(); break;
     case 'del-food': deleteFood(t.dataset.fid); break;
+    case 'mic': toggleMic(); break;
+    case 'parse': stopListening(true); runParse(); break;
+    case 'ai-cancel': if (UI.aiBusy) UI.aiBusy.abort(); break;
+    case 'example': { const ta = $('#voiceText'); ta.value = VOICE_EXAMPLES[+t.dataset.i]; runParse(); break; }
+    case 'voice-add': addVoice(); break;
+    case 'voice-search': {
+      const q = UI.voice && UI.voice.unmatched[+t.dataset.i];
+      openSheet({ view: 'add', meal: UI.sheet.meal, tab: 'search', q: q || '', from: 'voice' });
+      break;
+    }
     case 'export': doExport(); break;
     case 'copy-export': {
       const ta = $('#exportText');
@@ -1462,20 +2239,52 @@ document.addEventListener('submit', e => {
   else if (id === 'customForm') submitCustom();
   else if (id === 'quickForm') submitQuick();
   else if (id === 'goalsForm') submitGoals();
+  else if (id === 'actForm') submitAct();
 });
 
+function onVoiceField(el) {
+  if (!UI.voice) return;
+  const k = el.dataset.k;
+  if (el.dataset.vi === 'water') { UI.voice.waterOn = el.checked; el.closest('.vr').classList.toggle('off', !el.checked); updateVoiceTotal(); return; }
+  const it = UI.voice.items[+el.dataset.vi];
+  if (!it) return;
+  if (k === 'g') it.g = num(el.value);
+  else if (k === 'on') { it.on = el.checked; el.closest('.vr').classList.toggle('off', !el.checked); }
+  else if (k === 'meal') it.meal = el.value;
+  else if (k === 'food') {
+    const f = it.alts[+el.value];
+    if (f && f !== it.food) {
+      if (it.est && f.unit && it.food.unit && it.g === it.food.unit.g) it.g = f.unit.g;
+      it.food = f;
+      renderVoiceResults();
+    }
+    return;
+  }
+  const kc = $('#vrk-' + el.dataset.vi);
+  if (kc) kc.textContent = `${fk(it.g > 0 ? fromPer(it.food, it.g).kcal : 0)} kcal`;
+  updateVoiceTotal();
+}
+
 document.addEventListener('input', e => {
-  const id = e.target.id;
+  const el = e.target, id = el.id;
+  if (el.dataset && el.dataset.vi !== undefined) return onVoiceField(el);
   if (id === 'foodSearch') renderResults();
+  else if (id === 'voiceText' && UI.voice) UI.voice.text = el.value;
   else if (id === 'amountG') { updatePreview(); showErr('#amountErr', ''); showErr('#editErr', ''); }
   else if (/^cf/.test(id)) { updateCustomCheck(); showErr('#cfErr', ''); }
   else if (/^g(Kcal|P|C|F)$/.test(id)) { updateGoalCheck(); showErr('#goalErr', ''); }
   else if (/^q/.test(id)) { showErr('#qErr', ''); showErr('#editErr', ''); }
+  else if (id === 'actMin') { updateActPreview(); showErr('#actErr', ''); }
+  else if (id === 'actKcal') { UI.sheet.kcalTouched = true; showErr('#actErr', ''); }
 });
 
 document.addEventListener('change', e => {
-  if (e.target.id === 'datePick' && e.target.value) setDate(e.target.value);
-  if (e.target.id === 'importFile' && e.target.files && e.target.files[0]) { doImport(e.target.files[0]); e.target.value = ''; }
+  const id = e.target.id;
+  // Niektoré prehliadače pri zaškrtávacích políčkach a výberoch neposielajú „input“.
+  if (e.target.dataset && e.target.dataset.vi !== undefined && (e.target.type === 'checkbox' || e.target.tagName === 'SELECT')) onVoiceField(e.target);
+  if (id === 'datePick' && e.target.value) setDate(e.target.value);
+  if (id === 'importFile' && e.target.files && e.target.files[0]) { doImport(e.target.files[0]); e.target.value = ''; }
+  if (id === 'actKind') { UI.sheet.kcalTouched = false; updateActPreview(); }
 });
 
 document.addEventListener('keydown', e => {
@@ -1485,6 +2294,7 @@ document.addEventListener('keydown', e => {
     const first = document.querySelector('#foodResults [data-act="pick-food"]');
     if (first && $('#foodSearch').value.trim()) first.click();
   }
+  if (e.key === 'Enter' && e.target.id === 'voiceText' && !e.shiftKey) { e.preventDefault(); runParse(); }
 });
 
 document.addEventListener('visibilitychange', () => {
@@ -1498,16 +2308,17 @@ document.addEventListener('visibilitychange', () => {
 async function boot() {
   document.documentElement.lang = 'sk';
   render();
-  const c = window.claude;
-  if (c && typeof c.use === 'function') {
+  if (IN_CLAUDE) {
+    window.claude.use('sample').then(s => { UI.sample = s || null; }).catch(() => {});
     try {
-      const [db, user] = await Promise.all([c.use('db'), c.use('user')]);
+      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
       const id = user ? await user.id() : null;
       if (db && id) { startCloud(db, id); return; }
     } catch (e) { /* bez cloudu pokračujeme lokálne */ }
   }
   startLocal();
 }
+window.DennikParse = parseLocal;
 boot();
 })();
 </script>
